@@ -1,7 +1,11 @@
 package com.jfranco.sharetosave.features.posts.list
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -31,6 +35,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,11 +43,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.util.Consumer
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.jfranco.sharetosave.features.posts.addEdit.AddEditNoteScreen
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
@@ -60,6 +69,11 @@ class NotesScreen : Screen {
 
         val context = LocalContext.current
         val navigator = LocalNavigator.currentOrThrow
+
+        HandleIntent(context) { intent ->
+            Log.i("MainActivity", "New Intent: ${intent.hashCode()}, ${intent.action}")
+            Log.i("MainActivity", "New Intent data: ${intent.dataString}")
+        }
 
         viewModel.collectSideEffect { sideEffect ->
             when (sideEffect) {
@@ -182,4 +196,58 @@ class NotesScreen : Screen {
     }
 }
 
-// class InvalidNoteException(message: String) : Exception(message)
+@Composable
+fun HandleIntent(context: Context, handleIntentAction: (intent: Intent) -> Unit) {
+    LaunchedEffect(Unit) {
+        Log.d("MainActivity", "HandleIntent...")
+
+        callbackFlow {
+            Log.d("MainActivity", "callbackFlow...")
+
+            val componentActivity = context as ComponentActivity
+            val currentIntent = componentActivity.intent
+
+            Log.d("MainActivity", "Intent: ${currentIntent.hashCode()}")
+            Log.d("MainActivity", "Action: ${currentIntent.action}")
+            Log.d("MainActivity", "Data  : ${currentIntent.data}")
+
+            val consumer = Consumer<Intent> { trySend(it) }
+            componentActivity.addOnNewIntentListener(consumer)
+            awaitClose {
+                Log.d("MainActivity", "removeOnNewIntentListener...")
+                componentActivity.removeOnNewIntentListener(consumer)
+            }
+        }.collectLatest {
+            Log.d("MainActivity", "handleIntentAction...")
+            handleIntentAction(it)
+        }
+    }
+
+//    LaunchedEffect(Unit) {
+//        Log.d("MainActivity", "HandleIntent...")
+//        callbackFlow {
+//            Log.d("MainActivity", "callbackFlow...")
+//
+//            val componentActivity = context as ComponentActivity
+//            val currentIntent = componentActivity.intent
+//
+//            Log.d("MainActivity", "Intent: ${currentIntent.hashCode()}")
+//            Log.d("MainActivity", "Action: ${currentIntent.action}")
+//            Log.d("MainActivity", "Data  : ${currentIntent.data}")
+//
+//            if (currentIntent?.data != null) {
+//                Log.d("MainActivity", "trySend...")
+//                trySend(currentIntent)
+//            }
+//            val consumer = Consumer<Intent> { trySend(it) }
+//            componentActivity.addOnNewIntentListener(consumer)
+//            awaitClose {
+//                Log.d("MainActivity", "removeOnNewIntentListener...")
+//                componentActivity.removeOnNewIntentListener(consumer)
+//            }
+//        }.collectLatest {
+//            Log.d("MainActivity", "handleIntentAction...")
+//            handleIntentAction(it)
+//        }
+//    }
+}
