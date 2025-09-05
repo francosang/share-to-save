@@ -1,8 +1,5 @@
 package com.jfranco.sharetosave.features.posts.list
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -45,10 +42,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.util.Consumer
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
-import com.jfranco.sharetosave.features.posts.addEdit.AddEditNoteScreen
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestinationNavArgs
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -56,197 +54,206 @@ import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 
+@Destination<RootGraph>(start = true)
+@Composable
+fun NotesListScreen(
+    navigator: DestinationsNavigator
+) {
 
-class NotesScreen : Screen {
+    Log.d("MyApp", "NotesListScreen ------------------")
 
-    @Composable
-    override fun Content() {
-        val viewModel = viewModel<NotesViewModel>()
-        val state by viewModel.collectAsState()
+    val viewModel = viewModel<NotesViewModel>()
+    val state by viewModel.collectAsState()
 
-        val snackBarHostState = remember { SnackbarHostState() }
-        val scope = rememberCoroutineScope()
+    val snackBarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
-        val context = LocalContext.current
-        val navigator = LocalNavigator.currentOrThrow
+    val context = LocalContext.current
 
-        HandleIntent(context) { intent ->
-            Log.i("MainActivity", "New Intent: ${intent.hashCode()}, ${intent.action}")
-            Log.i("MainActivity", "New Intent data: ${intent.dataString}")
+    // HandleIntent(context) { intent ->
+    //     Log.i("MyApp", "New Intent: ${intent.hashCode()}, ${intent.action}")
+    //     Log.i("MyApp", "New Intent data: ${intent.dataString}")
+    // }
+
+    viewModel.collectSideEffect { sideEffect ->
+        when (sideEffect) {
+            is NotesSideEffect.NavigateToAddEditNoteScreen ->
+                navigator.navigate(
+                    AddEditScreenDestination(
+                        AddEditScreenDestinationNavArgs(
+                            sideEffect.note,
+                        )
+                    )
+                )
         }
+    }
 
-        viewModel.collectSideEffect { sideEffect ->
-            when (sideEffect) {
-                is NotesSideEffect.NavigateToAddEditNoteScreen ->
-                    navigator.push(AddEditNoteScreen(sideEffect.note))
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    viewModel.onEvent(NotesEvent.AddEditNoteScreen(null))
+                },
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Note")
             }
-        }
-
-        Scaffold(
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = {
-                        viewModel.onEvent(NotesEvent.AddEditNoteScreen(null))
-                    },
-                    containerColor = MaterialTheme.colorScheme.primary
-                ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add Note")
-                }
-            },
-            content = { paddingValues ->
-                Column(
+        },
+        content = { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                Row(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
+                    Text(
+                        text = "Your Note",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    IconButton(
+                        onClick = { viewModel.onEvent(NotesEvent.ToggleOrderSection) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = "Sort"
+                        )
+                    }
+                }
+
+                AnimatedVisibility(
+                    visible = state.isOrderSectionVisible,
+                    enter = fadeIn() + slideInVertically(),
+                    exit = fadeOut() + slideOutVertically()
+                ) {
+                    OrderSection(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Your Note",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-
-                        IconButton(
-                            onClick = { viewModel.onEvent(NotesEvent.ToggleOrderSection) }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.KeyboardArrowDown,
-                                contentDescription = "Sort"
-                            )
+                            .padding(vertical = 16.dp),
+                        noteOrder = state.noteOrder,
+                        onOrderChange = {
+                            viewModel.onEvent(NotesEvent.Order(it))
                         }
-                    }
+                    )
+                }
 
-                    AnimatedVisibility(
-                        visible = state.isOrderSectionVisible,
-                        enter = fadeIn() + slideInVertically(),
-                        exit = fadeOut() + slideOutVertically()
-                    ) {
-                        OrderSection(
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Fixed(2),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(state.notes) { note ->
+                        NoteItemUI(
+                            note = note,
                             modifier = Modifier
+                                .padding(8.dp)
                                 .fillMaxWidth()
-                                .padding(vertical = 16.dp),
-                            noteOrder = state.noteOrder,
-                            onOrderChange = {
-                                viewModel.onEvent(NotesEvent.Order(it))
-                            }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    LazyVerticalStaggeredGrid(
-                        columns = StaggeredGridCells.Fixed(2),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(state.notes) { note ->
-                            NoteItemUI(
-                                note = note,
-                                modifier = Modifier
-                                    .padding(8.dp)
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        viewModel.onEvent(NotesEvent.AddEditNoteScreen(note))
-                                    },
-                                onShareClicked = {
-                                    val sendIntent: Intent = Intent().apply {
-                                        action = Intent.ACTION_SEND
-                                        putExtra(Intent.EXTRA_TEXT, note.content)
-                                        type = "text/plain"
-                                    }
-                                    val shareIntent = Intent.createChooser(sendIntent, null)
-                                    context.startActivity(shareIntent)
-
+                                .clickable {
+                                    viewModel.onEvent(NotesEvent.AddEditNoteScreen(note))
                                 },
-                                onDeleteClicked = {
-                                    viewModel.onEvent(NotesEvent.DeleteNote(note))
+                            onShareClicked = {
+                                val sendIntent: Intent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(Intent.EXTRA_TEXT, note.content)
+                                    type = "text/plain"
+                                }
+                                val shareIntent = Intent.createChooser(sendIntent, null)
+                                context.startActivity(shareIntent)
 
-                                    // TODO: move to an effect
-                                    // after deleting the note, show the snackbar
-                                    scope.launch {
-                                        Log.d("message", "delete")
-                                        val result = snackBarHostState.showSnackbar(
-                                            message = "Note Deleted!",
-                                            actionLabel = "Undo"
-                                        )
+                            },
+                            onDeleteClicked = {
+                                viewModel.onEvent(NotesEvent.DeleteNote(note))
 
-                                        when (result) {
-                                            SnackbarResult.ActionPerformed -> {
-                                                viewModel.onEvent(NotesEvent.RestoreNote)
-                                            }
+                                // TODO: move to an effect
+                                // after deleting the note, show the snackbar
+                                scope.launch {
+                                    Log.d("message", "delete")
+                                    val result = snackBarHostState.showSnackbar(
+                                        message = "Note Deleted!",
+                                        actionLabel = "Undo"
+                                    )
 
-                                            else -> {}
+                                    when (result) {
+                                        SnackbarResult.ActionPerformed -> {
+                                            viewModel.onEvent(NotesEvent.RestoreNote)
                                         }
 
+                                        else -> {}
                                     }
-                                }
-                            )
 
-                            //adding space b/w each note Item
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
+                                }
+                            }
+                        )
+
+                        //adding space b/w each note Item
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
             }
-        )
-    }
+        }
+    )
 }
 
 @Composable
-fun HandleIntent(context: Context, handleIntentAction: (intent: Intent) -> Unit) {
+fun HandleIntent(context: ComponentActivity, handleIntentAction: (intent: Intent) -> Unit) {
     LaunchedEffect(Unit) {
-        Log.d("MainActivity", "HandleIntent...")
+        Log.d("MyApp", "HandleIntent ------------------")
 
         callbackFlow {
-            Log.d("MainActivity", "callbackFlow...")
+            Log.d("MyApp", "callbackFlow...")
 
-            val componentActivity = context as ComponentActivity
-            val currentIntent = componentActivity.intent
+            val consumer = Consumer<Intent> {
 
-            Log.d("MainActivity", "Intent: ${currentIntent.hashCode()}")
-            Log.d("MainActivity", "Action: ${currentIntent.action}")
-            Log.d("MainActivity", "Data  : ${currentIntent.data}")
+                Log.d("MyApp", "Consumer: ------------------")
+                Log.d("MyApp", "consuming new intent: ${it.hashCode()}, ${it.action}")
+                Log.d("MyApp", "trying to send intent...")
 
-            val consumer = Consumer<Intent> { trySend(it) }
-            componentActivity.addOnNewIntentListener(consumer)
+                val res = trySend(it)
+
+                Log.d("MyApp", "trySend result: $res")
+            }
+            context.addOnNewIntentListener(consumer)
             awaitClose {
-                Log.d("MainActivity", "removeOnNewIntentListener...")
-                componentActivity.removeOnNewIntentListener(consumer)
+                Log.d("MyApp", "removeOnNewIntentListener...")
+                context.removeOnNewIntentListener(consumer)
             }
         }.collectLatest {
-            Log.d("MainActivity", "handleIntentAction...")
+            Log.d("MyApp", "handleIntentAction...")
             handleIntentAction(it)
         }
     }
 
 //    LaunchedEffect(Unit) {
-//        Log.d("MainActivity", "HandleIntent...")
+//        Log.d("MyApp", "HandleIntent...")
 //        callbackFlow {
-//            Log.d("MainActivity", "callbackFlow...")
+//            Log.d("MyApp", "callbackFlow...")
 //
 //            val componentActivity = context as ComponentActivity
 //            val currentIntent = componentActivity.intent
 //
-//            Log.d("MainActivity", "Intent: ${currentIntent.hashCode()}")
-//            Log.d("MainActivity", "Action: ${currentIntent.action}")
-//            Log.d("MainActivity", "Data  : ${currentIntent.data}")
+//            Log.d("MyApp", "Intent: ${currentIntent.hashCode()}")
+//            Log.d("MyApp", "Action: ${currentIntent.action}")
+//            Log.d("MyApp", "Data  : ${currentIntent.data}")
 //
 //            if (currentIntent?.data != null) {
-//                Log.d("MainActivity", "trySend...")
+//                Log.d("MyApp", "trySend...")
 //                trySend(currentIntent)
 //            }
 //            val consumer = Consumer<Intent> { trySend(it) }
 //            componentActivity.addOnNewIntentListener(consumer)
 //            awaitClose {
-//                Log.d("MainActivity", "removeOnNewIntentListener...")
+//                Log.d("MyApp", "removeOnNewIntentListener...")
 //                componentActivity.removeOnNewIntentListener(consumer)
 //            }
 //        }.collectLatest {
-//            Log.d("MainActivity", "handleIntentAction...")
+//            Log.d("MyApp", "handleIntentAction...")
 //            handleIntentAction(it)
 //        }
 //    }

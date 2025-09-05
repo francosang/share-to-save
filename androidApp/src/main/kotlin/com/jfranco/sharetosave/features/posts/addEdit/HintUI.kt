@@ -1,6 +1,9 @@
 package com.jfranco.sharetosave.features.posts.addEdit
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -24,13 +27,12 @@ fun HintUI(
     lineLimits: TextFieldLineLimits = TextFieldLineLimits.Default,
     onFocusChange: (FocusState) -> Unit
 ) {
-    Box(modifier = modifier) {
+    Box {
         BasicTextField(
             state = state,
             lineLimits = lineLimits,
             textStyle = textStyle,
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = modifier
                 .onFocusChanged { onFocusChange(it) }
         )
         if (isHintVisible) {

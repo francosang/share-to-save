@@ -1,7 +1,8 @@
 package com.jfranco.sharetosave.features.posts.addEdit
 
+import android.content.Intent
+import android.util.Log
 import androidx.compose.animation.Animatable
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -37,29 +38,27 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
 import com.jfranco.sharetosave.features.posts.list.Note
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 
-data class AddEditNoteScreen(
-    val note: Note?
-) : Screen {
-    @Composable
-    override fun Content() {
-        AddEditScreenUI(noteColor = note?.color ?: -1)
-    }
-}
 
-
+@Destination<RootGraph>
 @Composable
-fun AddEditScreenUI(noteColor: Int) {
+fun AddEditScreen(
+    note: Note?,
+    navigator: DestinationsNavigator
+) {
     val viewModel = viewModel<AddEditNoteViewModel>()
     val state by viewModel.collectAsState()
-    val navigator = LocalNavigator.currentOrThrow
+
+    Log.d("MyApp", "AddEditScreen ------------------: ${state.hashCode()}: $state")
+
+    val noteColor = note?.color ?: -1
 
     val snackBarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -75,7 +74,7 @@ fun AddEditScreenUI(noteColor: Int) {
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             AddEditNoteSideEffect.SaveNote ->
-                navigator.pop()
+                navigator.navigateUp()
 
             is AddEditNoteSideEffect.ShowSnackBar ->
                 snackBarHostState.showSnackbar(
@@ -169,6 +168,7 @@ fun AddEditScreenUI(noteColor: Int) {
                     },
                     isHintVisible = state.content.isHintVisible,
                     textStyle = MaterialTheme.typography.bodyMedium,
+                    lineLimits = TextFieldLineLimits.MultiLine(),
                     modifier = Modifier.fillMaxHeight()
                 )
             }

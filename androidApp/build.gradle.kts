@@ -65,8 +65,11 @@ dependencies {
     implementation(libs.sqldelight.android.driver)
 
     // Voyager
-    implementation(libs.voyager.navigator)
-    implementation(libs.voyager.hilt)
+//    implementation(libs.voyager.navigator)
+//    implementation(libs.voyager.hilt)
+
+    implementation(libs.compose.destinations.core)
+    ksp(libs.compose.destinations.ksp)
 
     // Orbit MVI
     implementation(libs.orbit.core)
