@@ -23,7 +23,7 @@ class NotesViewModel @Inject constructor(
             launch {
                 notesStore.observeNotes().collect { notes ->
                     reduce {
-                        state.copy(notes = notes)
+                        state.copy(notes = notes.sortedWith(state.noteOrder.comparator()))
                     }
                 }
             }
@@ -51,7 +51,10 @@ class NotesViewModel @Inject constructor(
             is NotesEvent.Order ->
                 intent {
                     reduce {
-                        state.copy(noteOrder = event.noteOrder)
+                        state.copy(
+                            noteOrder = event.noteOrder,
+                            notes = state.notes.sortedWith(event.noteOrder.comparator())
+                        )
                     }
                 }
 

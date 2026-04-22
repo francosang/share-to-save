@@ -27,6 +27,15 @@ sealed class NoteOrder(open val orderType: OrderType) : Parcelable {
     }
 }
 
+fun NoteOrder.comparator(): Comparator<Note> {
+    val base: Comparator<Note> = when (this) {
+        is NoteOrder.Title -> compareBy { it.title?.lowercase() ?: "" }
+        is NoteOrder.Date -> compareBy { it.edited ?: it.created }
+        is NoteOrder.Color -> compareBy { it.color }
+    }
+    return if (orderType is OrderType.Descending) base.reversed() else base
+}
+
 sealed class NotesEvent {
     data class Order(val noteOrder: NoteOrder) : NotesEvent()
     data class DeleteNote(val note: Note) : NotesEvent()
