@@ -16,6 +16,7 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() { // Or your Orbit ViewModel
 
     val imageToDisplay: StateFlow<Uri?> = sharedDataRepository.sharedImageUri
+    val sharedText: StateFlow<String?> = sharedDataRepository.sharedText
 
     // If using Orbit, you might post a side effect or update state
     // based on sharedDataRepository.sharedImageUri changes.

@@ -28,15 +28,19 @@ class ShareHandlerActivity : ComponentActivity() {
         Log.i("MyApp", "data: ${intent.data}")
         Log.i("MyApp", "flags: ${intent.flags}")
 
-        // Process intent from Gallery
-        val imageUri: Uri? =
-            intent.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri // or however you get it
+        val imageUri: Uri? = intent.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri
+        val sharedText: String? = intent.getStringExtra(Intent.EXTRA_TEXT)
 
         Log.i("MyApp", "ShareHandlerActivity - Received imageUri: $imageUri")
+        Log.i("MyApp", "ShareHandlerActivity - Received sharedText: $sharedText")
 
         if (imageUri != null) {
             Log.i("MyApp", "ShareHandlerActivity - Storing imageUri in repository")
             sharedDataRepository.setSharedImageUri(imageUri)
+        }
+        if (sharedText != null) {
+            Log.i("MyApp", "ShareHandlerActivity - Storing sharedText in repository")
+            sharedDataRepository.setSharedText(sharedText)
         }
 
         // Now, start MainActivity (if not already running or to bring to front)
