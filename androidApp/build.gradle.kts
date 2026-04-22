@@ -83,6 +83,9 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
 
+    // Coil
+    implementation(libs.coil.compose)
+
     implementation(libs.material3)
 
     implementation(libs.androidx.core.splashscreen)
