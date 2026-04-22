@@ -4,8 +4,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.sqldelight)
-
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.parcelize")
@@ -67,8 +65,6 @@ room {
 }
 
 dependencies {
-    implementation(libs.sqldelight.android.driver)
-
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.ksp)
 
@@ -102,12 +98,4 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-}
-
-sqldelight {
-    databases {
-        create("Database") {
-            packageName.set("com.jfranco.sharetosave")
-        }
-    }
 }

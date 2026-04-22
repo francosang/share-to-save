@@ -4,8 +4,6 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.google.dagger.hilt.android) apply false
-    alias(libs.plugins.sqldelight) apply false
-
     id("com.google.devtools.ksp") version "2.2.10-2.0.2" apply false
     id("org.jetbrains.kotlin.plugin.parcelize") version "2.2.10" apply false
     id("androidx.room") version "2.7.2" apply false
