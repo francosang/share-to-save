@@ -14,8 +14,9 @@ data class AddEditNoteState(
     val content: NoteTextFieldState = NoteTextFieldState(
         hint = "Enter some content..."
     ),
+    val image: String? = null,
     val color: Int = -1,
-    val noteId: Int? = null,
+    val noteId: Long? = null,
     val isNoteSaved: Boolean = false,
     val saveEnabled: Boolean = false
 ) : Parcelable

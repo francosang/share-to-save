@@ -48,7 +48,6 @@ class AddEditNoteViewModel @Inject constructor(
                 }
             }
 
-            // Editing an existing note
             AddEditNoteState(
                 title = NoteTextFieldState(
                     state = TextFieldState(note?.title.orEmpty()),
@@ -60,8 +59,10 @@ class AddEditNoteViewModel @Inject constructor(
                     hint = "Enter some content...",
                     isHintVisible = note?.content.isNullOrBlank()
                 ),
+                image = note?.image,
                 color = note?.color ?: -1,
                 saveEnabled = !note?.title.isNullOrBlank() || !note?.content.isNullOrBlank()
+                    || note?.image != null
             )
         },
         savedStateHandle = savedStateHandle

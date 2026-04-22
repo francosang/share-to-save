@@ -20,11 +20,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.jfranco.sharetosave.domain.Note
 import java.time.LocalDateTime
 
@@ -48,6 +52,19 @@ fun NoteItemUI(
                     .padding(16.dp)
             ) {
                 Column {
+                    if (note.image != null) {
+                        AsyncImage(
+                            model = note.image,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
                     Text(
                         text = note.title ?: "",
                         style = MaterialTheme.typography.bodyLarge,

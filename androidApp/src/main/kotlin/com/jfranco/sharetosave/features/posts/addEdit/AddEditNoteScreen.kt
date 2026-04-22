@@ -1,9 +1,13 @@
 package com.jfranco.sharetosave.features.posts.addEdit
 
+import android.graphics.ImageDecoder
+import android.os.Build
+import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,11 +41,16 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jfranco.sharetosave.domain.Note
 import com.ramcosta.composedestinations.annotation.Destination
@@ -122,7 +131,7 @@ fun Screen(
                                     id = state.noteId,
                                     title = state.title.state.text.toString(),
                                     content = state.content.state.text.toString(),
-                                    image = null,
+                                    image = state.image,
                                     created = LocalDateTime.now(),
                                     edited = null,
                                     color = state.color
@@ -195,6 +204,43 @@ private fun Content(
 
                 )
             }
+        }
+
+        if (state.image != null) {
+            Log.d("MyApp", "AddEditScreen: image: ${state.image}")
+
+            val localUri = state.image.toUri()
+            val context = LocalContext.current
+            val btm = if (Build.VERSION.SDK_INT < 28) {
+                MediaStore.Images
+                    .Media.getBitmap(context.contentResolver, localUri)
+            } else {
+                val source = ImageDecoder
+                    .createSource(context.contentResolver, localUri)
+                ImageDecoder.decodeBitmap(source)
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Image(
+                bitmap = btm.asImageBitmap(),
+                contentDescription = "Shared image",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+            )
+
+//            AsyncImage(
+//                model = btm.asImageBitmap(),
+//                contentDescription = "Shared image",
+//                contentScale = ContentScale.Crop,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(200.dp)
+//                    .clip(RoundedCornerShape(8.dp))
+//            )
         }
 
         Spacer(Modifier.height(16.dp))
