@@ -1,41 +1,45 @@
 package com.jfranco.sharetosave.persistence.implementation.implementation
 
+import com.jfranco.sharetosave.di.IoDispatcher
 import com.jfranco.sharetosave.domain.Note
 import com.jfranco.sharetosave.persistence.implementation.dao.NoteDao
 import com.jfranco.sharetosave.persistence.entity.toDomain
 import com.jfranco.sharetosave.persistence.entity.toDomains
 import com.jfranco.sharetosave.persistence.entity.toEntity
 import com.jfranco.sharetosave.persistence.specification.NoteStore
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class NoteStoreImpl @Inject constructor(
     private val noteDao: NoteDao,
+    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : NoteStore {
 
-    override suspend fun getNotes(): List<Note> {
-        return noteDao.selectAll().toDomains()
+    override suspend fun getNotes(): List<Note> = withContext(ioDispatcher) {
+        noteDao.selectAll().toDomains()
     }
 
     override fun observeNotes(): Flow<List<Note>> {
-        return noteDao.observeAll().map {
-            it.toDomains()
-        }
+        return noteDao.observeAll()
+            .map { it.toDomains() }
+            .flowOn(ioDispatcher)
     }
 
-    override suspend fun save(note: Note): Note {
+    override suspend fun save(note: Note): Note = withContext(ioDispatcher) {
         val entity = note.toEntity()
         val id = noteDao.insert(entity)
-        return note.copy(id = id.toInt())
+        note.copy(id = id)
     }
 
-    override suspend fun getNote(id: Int): Note? {
-        val entity = noteDao.selectNote(id)
-        return entity?.toDomain()
+    override suspend fun getNote(id: Int): Note? = withContext(ioDispatcher) {
+        noteDao.selectNote(id)?.toDomain()
     }
 
-    override suspend fun deleteNote(id: Int) {
+    override suspend fun deleteNote(id: Int) = withContext(ioDispatcher) {
         noteDao.delete(id)
     }
 }

@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 
 @Parcelize
 data class Note(
-    val id: Int?,
+    val id: Long?,
     val title: String?,
     val content: String?,
     val image: String?,
