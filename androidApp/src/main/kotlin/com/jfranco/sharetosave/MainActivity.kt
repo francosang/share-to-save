@@ -8,29 +8,23 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import com.jfranco.sharetosave.common.theme.CatanCompanionTheme
 import com.jfranco.sharetosave.features.posts.addEdit.AddEditScreen
 import com.jfranco.sharetosave.features.posts.addEdit.AddEditScreenDestinationArgs
-import com.jfranco.sharetosave.features.posts.shared.SharedDataRepository
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestination
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import org.orbitmvi.orbit.compose.collectSideEffect
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val mainViewModel: MainViewModel by viewModels()
-
-    // Inject the repository directly into MainActivity
-    @Inject
-    lateinit var sharedDataRepository: SharedDataRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,19 +36,20 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
+            val navigator = navController.rememberDestinationsNavigator()
 
-            LaunchedEffect(Unit) {
-                combine(
-                    mainViewModel.imageToDisplay,
-                    mainViewModel.sharedText
-                ) { image, text -> image to text }
-                    .filter { (image, text) -> image != null || text != null }
-                    .collect { (image, text) ->
-                        Log.d("MyApp", "MainActivity: navigating to AddEditScreen")
-                        navController.navigate(
-                            AddEditScreenDestination(AddEditScreenDestinationArgs()).route
+            mainViewModel.collectSideEffect {
+                when (it) {
+                    is MainViewSideEffect.OnDataShared ->
+                        navigator.navigate(
+                            AddEditScreenDestination(
+                                AddEditScreenDestinationArgs(
+                                    text = it.text,
+                                    image = it.image,
+                                )
+                            )
                         )
-                    }
+                }
             }
 
             CatanCompanionTheme {
@@ -94,12 +89,9 @@ class MainActivity : ComponentActivity() {
             Log.i("MyApp", "MainActivity - Received imageUri: $imageUri")
             Log.i("MyApp", "MainActivity - Received sharedText: $sharedText")
 
-            if (imageUri != null) {
-                sharedDataRepository.setSharedImageUri(imageUri)
-            }
-            if (sharedText != null) {
-                sharedDataRepository.setSharedText(sharedText)
-            }
+            mainViewModel.onEvent(MainEvent.OnDataShared(sharedText, imageUri))
+
+            setIntent(null)
         }
     }
 }
