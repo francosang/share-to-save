@@ -1,6 +1,7 @@
 package com.jfranco.sharetosave.features.posts.list
 
 import android.os.Parcelable
+import com.jfranco.sharetosave.domain.Note
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

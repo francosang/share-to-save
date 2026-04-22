@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -41,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.util.Consumer
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -62,7 +64,7 @@ fun NotesListScreen(
 
     Log.d("MyApp", "NotesListScreen ------------------")
 
-    val viewModel = viewModel<NotesViewModel>()
+    val viewModel = hiltViewModel<NotesViewModel>()
     val state by viewModel.collectAsState()
 
     val snackBarHostState = remember { SnackbarHostState() }
@@ -99,6 +101,7 @@ fun NotesListScreen(
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add Note")
             }
         },
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
         content = { paddingValues ->
             Column(
                 modifier = Modifier

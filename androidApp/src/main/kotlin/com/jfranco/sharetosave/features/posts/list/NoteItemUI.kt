@@ -25,14 +25,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-
+import com.jfranco.sharetosave.domain.Note
+import java.time.LocalDateTime
 
 @Composable
 fun NoteItemUI(
     note: Note,
     modifier: Modifier = Modifier,
     onDeleteClicked: () -> Unit,
-    onShareClicked: (String) -> Unit
+    onShareClicked: (Note) -> Unit
 ) {
     Card(modifier = modifier) {
         Box(
@@ -48,7 +49,7 @@ fun NoteItemUI(
             ) {
                 Column {
                     Text(
-                        text = note.title,
+                        text = note.title ?: "",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.secondary,
@@ -59,40 +60,40 @@ fun NoteItemUI(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = note.content,
+                        text = note.content ?: "",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.background,
                         maxLines = 10,
                         overflow = TextOverflow.Ellipsis
                     )
 
                     // Share and Delete Icons
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        IconButton(
-                            onClick = { onShareClicked(note.content) },
+                    if (note.id != null)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
+                            horizontalArrangement = Arrangement.End
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Share,
-                                contentDescription = "Share Note",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
+                            IconButton(
+                                onClick = { onShareClicked(note) },
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = "Share Note",
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
 
-                        IconButton(
-                            onClick = onDeleteClicked,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete Note",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
+                            IconButton(
+                                onClick = onDeleteClicked,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete Note",
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                         }
-                    }
                 }
             }
         }
@@ -105,10 +106,13 @@ fun NoteItemUI(
 fun NoteItemUIPreview() {
     NoteItemUI(
         note = Note(
-            "Morning Task",
-            "This is a sample Note",
-            1234,
-            1
+            id = 1,
+            title = "Titulo",
+            content = "Contenido de la nota",
+            image = null,
+            created = LocalDateTime.now(),
+            edited = null,
+            color = -1,
         ),
         modifier = Modifier.padding(16.dp),
         onDeleteClicked = {},
