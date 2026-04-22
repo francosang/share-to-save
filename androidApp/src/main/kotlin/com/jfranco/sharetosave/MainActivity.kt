@@ -5,25 +5,25 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import com.jfranco.sharetosave.common.theme.CatanCompanionTheme
-import com.jfranco.sharetosave.domain.Note
 import com.jfranco.sharetosave.features.posts.addEdit.AddEditScreen
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestinationNavArgs
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
-import androidx.compose.ui.graphics.toArgb
 import dagger.hilt.android.AndroidEntryPoint
-import java.time.LocalDateTime
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val mainViewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -36,29 +36,20 @@ class MainActivity : ComponentActivity() {
         Log.i("MyApp", "flags: ${intent.flags}")
 
         setContent {
-            val mainViewModel = hiltViewModel<MainViewModel>()
-            val image by mainViewModel.imageToDisplay.collectAsState()
-            val sharedText by mainViewModel.sharedText.collectAsState()
-
             val navController = rememberNavController()
 
-            LaunchedEffect(image, sharedText) {
-                Log.d("MyApp", "MainActivity: LaunchedEffect fired — image=$image, sharedText=$sharedText")
-                if (image != null || sharedText != null) {
-                    val note = Note(
-                        id = null,
-                        title = null,
-                        content = sharedText,
-                        image = image?.toString(),
-                        created = LocalDateTime.now(),
-                        edited = null,
-                        color = Note.noteColors.first().toArgb(),
-                    )
-                    val direction = AddEditScreenDestination(AddEditScreenDestinationNavArgs(note))
-                    Log.d("MyApp", "MainActivity: navigating to AddEditScreen — route=${direction.route}")
-                    navController.navigate(direction.route)
-                    mainViewModel.consumeSharedData()
-                }
+            LaunchedEffect(Unit) {
+                combine(
+                    mainViewModel.imageToDisplay,
+                    mainViewModel.sharedText
+                ) { image, text -> image to text }
+                    .filter { (image, text) -> image != null || text != null }
+                    .collect {
+                        Log.d("MyApp", "MainActivity: navigating to AddEditScreen")
+                        navController.navigate(
+                            AddEditScreenDestination(AddEditScreenDestinationNavArgs(note = null)).route
+                        )
+                    }
             }
 
             CatanCompanionTheme {

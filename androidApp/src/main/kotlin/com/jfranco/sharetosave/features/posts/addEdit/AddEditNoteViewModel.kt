@@ -6,6 +6,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.jfranco.sharetosave.domain.Note
+import com.jfranco.sharetosave.features.posts.shared.SharedDataRepository
 import com.jfranco.sharetosave.persistence.specification.NoteStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.coroutineScope
@@ -19,31 +20,54 @@ import javax.inject.Inject
 @HiltViewModel
 class AddEditNoteViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    val noteStore: NoteStore
+    val noteStore: NoteStore,
+    private val sharedDataRepository: SharedDataRepository
 ) : ViewModel(), ContainerHost<AddEditNoteState, AddEditNoteSideEffect> {
 
     private val existingNote: Note? = savedStateHandle.get<Note>("note")
 
     override val container = container<AddEditNoteState, AddEditNoteSideEffect>(
-        initialState = existingNote?.takeIf { it.id != null }?.let { note ->
-            AddEditNoteState(
-                title = NoteTextFieldState(
-                    state = TextFieldState(note.title.orEmpty()),
-                    hint = "Enter title...",
-                    isHintVisible = note.title.isNullOrBlank()
-                ),
-                content = NoteTextFieldState(
-                    state = TextFieldState(note.content.orEmpty()),
-                    hint = "Enter some content...",
-                    isHintVisible = note.content.isNullOrBlank()
-                ),
-                color = note.color,
-                saveEnabled = !note.title.isNullOrBlank() || !note.content.isNullOrBlank()
-            )
-        } ?: AddEditNoteState(),
+        initialState = run {
+            val note = existingNote
+            if (note?.id != null) {
+                // Editing an existing note
+                AddEditNoteState(
+                    title = NoteTextFieldState(
+                        state = TextFieldState(note.title.orEmpty()),
+                        hint = "Enter title...",
+                        isHintVisible = note.title.isNullOrBlank()
+                    ),
+                    content = NoteTextFieldState(
+                        state = TextFieldState(note.content.orEmpty()),
+                        hint = "Enter some content...",
+                        isHintVisible = note.content.isNullOrBlank()
+                    ),
+                    color = note.color,
+                    saveEnabled = !note.title.isNullOrBlank() || !note.content.isNullOrBlank()
+                )
+            } else {
+                // Shared content from an external app
+                val sharedText = sharedDataRepository.sharedText.value
+                val sharedImageUri = sharedDataRepository.sharedImageUri.value
+                if (sharedText != null || sharedImageUri != null) {
+                    AddEditNoteState(
+                        content = NoteTextFieldState(
+                            state = TextFieldState(sharedText.orEmpty()),
+                            hint = "Enter some content...",
+                            isHintVisible = sharedText.isNullOrBlank()
+                        ),
+                        saveEnabled = !sharedText.isNullOrBlank() || sharedImageUri != null
+                    )
+                } else {
+                    AddEditNoteState()
+                }
+            }
+        },
         savedStateHandle = savedStateHandle
     ) {
         Log.i("AddEditNoteViewModel", "Container initialized")
+        sharedDataRepository.setSharedText(null)
+        sharedDataRepository.setSharedImageUri(null)
 
         // Used to launch in parallel coroutines listening to the text fields changes
         coroutineScope {

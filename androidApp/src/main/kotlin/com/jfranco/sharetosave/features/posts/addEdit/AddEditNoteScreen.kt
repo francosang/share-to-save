@@ -58,6 +58,8 @@ fun AddEditScreen(
     navigator: DestinationsNavigator
 ) {
     Log.d("MyApp", "AddEditScreen ------------------")
+    Log.d("MyApp", "AddEditScreen: note: $note")
+
 
     val viewModel = hiltViewModel<AddEditNoteViewModel>()
     val state by viewModel.collectAsState()
@@ -80,6 +82,8 @@ fun Screen(
     navigator: DestinationsNavigator,
     viewModel: AddEditNoteViewModel
 ) {
+    Log.d("MyApp", "AddEditScreen: state: $state")
+
     val noteBgAnimation by animateColorAsState(
         targetValue = Color(state.color),
         animationSpec = tween(durationMillis = 300)
