@@ -51,15 +51,19 @@ import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 import java.time.LocalDateTime
 
-@Destination<RootGraph>
+
+data class AddEditScreenDestinationArgs(
+    val note: Note? = null,
+)
+
+@Destination<RootGraph>(
+    navArgs = AddEditScreenDestinationArgs::class
+)
 @Composable
 fun AddEditScreen(
-    note: Note?,
     navigator: DestinationsNavigator
 ) {
     Log.d("MyApp", "AddEditScreen ------------------")
-    Log.d("MyApp", "AddEditScreen: note: $note")
-
 
     val viewModel = hiltViewModel<AddEditNoteViewModel>()
     val state by viewModel.collectAsState()
@@ -71,13 +75,12 @@ fun AddEditScreen(
         }
     }
 
-    Screen(note, state, navigator, viewModel)
+    Screen(state, navigator, viewModel)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Screen(
-    note: Note?,
     state: AddEditNoteState,
     navigator: DestinationsNavigator,
     viewModel: AddEditNoteViewModel
@@ -116,7 +119,7 @@ fun Screen(
                         viewModel.onEvent(
                             AddEditNoteEvent.SaveNote(
                                 Note(
-                                    id = note?.id,
+                                    id = state.noteId,
                                     title = state.title.state.text.toString(),
                                     content = state.content.state.text.toString(),
                                     image = null,

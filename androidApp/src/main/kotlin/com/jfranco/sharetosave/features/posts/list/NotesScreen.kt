@@ -2,7 +2,6 @@ package com.jfranco.sharetosave.features.posts.list
 
 import android.content.Intent
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -33,7 +32,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,17 +39,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.util.Consumer
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jfranco.sharetosave.features.posts.addEdit.AddEditScreenDestinationArgs
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestinationNavArgs
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
@@ -72,17 +65,12 @@ fun NotesListScreen(
 
     val context = LocalContext.current
 
-    // HandleIntent(context) { intent ->
-    //     Log.i("MyApp", "New Intent: ${intent.hashCode()}, ${intent.action}")
-    //     Log.i("MyApp", "New Intent data: ${intent.dataString}")
-    // }
-
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             is NotesSideEffect.NavigateToAddEditNoteScreen ->
                 navigator.navigate(
                     AddEditScreenDestination(
-                        AddEditScreenDestinationNavArgs(
+                        AddEditScreenDestinationArgs(
                             sideEffect.note,
                         )
                     )
@@ -202,62 +190,4 @@ fun NotesListScreen(
             }
         }
     )
-}
-
-@Composable
-fun HandleIntent(context: ComponentActivity, handleIntentAction: (intent: Intent) -> Unit) {
-    LaunchedEffect(Unit) {
-        Log.d("MyApp", "HandleIntent ------------------")
-
-        callbackFlow {
-            Log.d("MyApp", "callbackFlow...")
-
-            val consumer = Consumer<Intent> {
-
-                Log.d("MyApp", "Consumer: ------------------")
-                Log.d("MyApp", "consuming new intent: ${it.hashCode()}, ${it.action}")
-                Log.d("MyApp", "trying to send intent...")
-
-                val res = trySend(it)
-
-                Log.d("MyApp", "trySend result: $res")
-            }
-            context.addOnNewIntentListener(consumer)
-            awaitClose {
-                Log.d("MyApp", "removeOnNewIntentListener...")
-                context.removeOnNewIntentListener(consumer)
-            }
-        }.collectLatest {
-            Log.d("MyApp", "handleIntentAction...")
-            handleIntentAction(it)
-        }
-    }
-
-//    LaunchedEffect(Unit) {
-//        Log.d("MyApp", "HandleIntent...")
-//        callbackFlow {
-//            Log.d("MyApp", "callbackFlow...")
-//
-//            val componentActivity = context as ComponentActivity
-//            val currentIntent = componentActivity.intent
-//
-//            Log.d("MyApp", "Intent: ${currentIntent.hashCode()}")
-//            Log.d("MyApp", "Action: ${currentIntent.action}")
-//            Log.d("MyApp", "Data  : ${currentIntent.data}")
-//
-//            if (currentIntent?.data != null) {
-//                Log.d("MyApp", "trySend...")
-//                trySend(currentIntent)
-//            }
-//            val consumer = Consumer<Intent> { trySend(it) }
-//            componentActivity.addOnNewIntentListener(consumer)
-//            awaitClose {
-//                Log.d("MyApp", "removeOnNewIntentListener...")
-//                componentActivity.removeOnNewIntentListener(consumer)
-//            }
-//        }.collectLatest {
-//            Log.d("MyApp", "handleIntentAction...")
-//            handleIntentAction(it)
-//        }
-//    }
 }

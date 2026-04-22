@@ -10,15 +10,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val sharedDataRepository: SharedDataRepository
+    sharedDataRepository: SharedDataRepository
 ) : ViewModel() {
 
     val imageToDisplay: StateFlow<Uri?> = sharedDataRepository.sharedImageUri
     val sharedText: StateFlow<String?> = sharedDataRepository.sharedText
 
-    fun consumeSharedData() {
-        Log.d("MyApp", "MainViewModel: consumeSharedData — clearing repository")
-        sharedDataRepository.setSharedImageUri(null)
-        sharedDataRepository.setSharedText(null)
-    }
 }

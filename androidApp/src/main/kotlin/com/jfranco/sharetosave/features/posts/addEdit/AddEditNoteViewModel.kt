@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import com.jfranco.sharetosave.domain.Note
 import com.jfranco.sharetosave.features.posts.shared.SharedDataRepository
 import com.jfranco.sharetosave.persistence.specification.NoteStore
+import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.ContainerHost
 import org.orbitmvi.orbit.viewmodel.container
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,44 +26,43 @@ class AddEditNoteViewModel @Inject constructor(
     private val sharedDataRepository: SharedDataRepository
 ) : ViewModel(), ContainerHost<AddEditNoteState, AddEditNoteSideEffect> {
 
-    private val existingNote: Note? = savedStateHandle.get<Note>("note")
+    private val existingNote: Note? = AddEditScreenDestination.argsFrom(savedStateHandle).note
 
     override val container = container<AddEditNoteState, AddEditNoteSideEffect>(
         initialState = run {
-            val note = existingNote
-            if (note?.id != null) {
-                // Editing an existing note
-                AddEditNoteState(
-                    title = NoteTextFieldState(
-                        state = TextFieldState(note.title.orEmpty()),
-                        hint = "Enter title...",
-                        isHintVisible = note.title.isNullOrBlank()
-                    ),
-                    content = NoteTextFieldState(
-                        state = TextFieldState(note.content.orEmpty()),
-                        hint = "Enter some content...",
-                        isHintVisible = note.content.isNullOrBlank()
-                    ),
-                    color = note.color,
-                    saveEnabled = !note.title.isNullOrBlank() || !note.content.isNullOrBlank()
-                )
-            } else {
-                // Shared content from an external app
+            val note = existingNote ?: run {
                 val sharedText = sharedDataRepository.sharedText.value
                 val sharedImageUri = sharedDataRepository.sharedImageUri.value
                 if (sharedText != null || sharedImageUri != null) {
-                    AddEditNoteState(
-                        content = NoteTextFieldState(
-                            state = TextFieldState(sharedText.orEmpty()),
-                            hint = "Enter some content...",
-                            isHintVisible = sharedText.isNullOrBlank()
-                        ),
-                        saveEnabled = !sharedText.isNullOrBlank() || sharedImageUri != null
+                    Note(
+                        id = null,
+                        title = sharedText,
+                        content = null,
+                        image = sharedImageUri.toString(),
+                        created = LocalDateTime.now(),
+                        edited = null,
+                        color = 0
                     )
                 } else {
-                    AddEditNoteState()
+                    null
                 }
             }
+
+            // Editing an existing note
+            AddEditNoteState(
+                title = NoteTextFieldState(
+                    state = TextFieldState(note?.title.orEmpty()),
+                    hint = "Enter title...",
+                    isHintVisible = note?.title.isNullOrBlank()
+                ),
+                content = NoteTextFieldState(
+                    state = TextFieldState(note?.content.orEmpty()),
+                    hint = "Enter some content...",
+                    isHintVisible = note?.content.isNullOrBlank()
+                ),
+                color = note?.color ?: -1,
+                saveEnabled = !note?.title.isNullOrBlank() || !note?.content.isNullOrBlank()
+            )
         },
         savedStateHandle = savedStateHandle
     ) {

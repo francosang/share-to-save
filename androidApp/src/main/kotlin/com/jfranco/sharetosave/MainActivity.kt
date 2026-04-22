@@ -12,10 +12,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import com.jfranco.sharetosave.common.theme.CatanCompanionTheme
 import com.jfranco.sharetosave.features.posts.addEdit.AddEditScreen
+import com.jfranco.sharetosave.features.posts.addEdit.AddEditScreenDestinationArgs
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestinationNavArgs
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                     .collect {
                         Log.d("MyApp", "MainActivity: navigating to AddEditScreen")
                         navController.navigate(
-                            AddEditScreenDestination(AddEditScreenDestinationNavArgs(note = null)).route
+                            AddEditScreenDestination(AddEditScreenDestinationArgs()).route
                         )
                     }
             }
@@ -59,7 +59,6 @@ class MainActivity : ComponentActivity() {
                 ) {
                     composable(AddEditScreenDestination) {
                         AddEditScreen(
-                            note = navArgs.note,
                             navigator = destinationsNavigator,
                         )
                     }
