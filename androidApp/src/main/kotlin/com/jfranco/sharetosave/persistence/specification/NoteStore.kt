@@ -8,5 +8,5 @@ interface NoteStore {
     fun observeNotes(): Flow<List<Note>>
     suspend fun save(note: Note): Note
     suspend fun getNote(id: Int): Note?
-    suspend fun deleteNote(id: Int)
+    suspend fun deleteNote(id: Long)
 }

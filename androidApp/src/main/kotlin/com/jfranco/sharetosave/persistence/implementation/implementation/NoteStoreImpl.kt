@@ -39,7 +39,7 @@ class NoteStoreImpl @Inject constructor(
         noteDao.selectNote(id)?.toDomain()
     }
 
-    override suspend fun deleteNote(id: Int) = withContext(ioDispatcher) {
+    override suspend fun deleteNote(id: Long) = withContext(ioDispatcher) {
         noteDao.delete(id)
     }
 }
