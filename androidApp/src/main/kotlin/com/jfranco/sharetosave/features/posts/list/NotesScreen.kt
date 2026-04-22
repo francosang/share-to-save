@@ -65,7 +65,7 @@ fun NotesListScreen(
                 navigator.navigate(
                     AddEditScreenDestination(
                         AddEditScreenDestinationArgs(
-                            sideEffect.note,
+                            sideEffect.note
                         )
                     )
                 )

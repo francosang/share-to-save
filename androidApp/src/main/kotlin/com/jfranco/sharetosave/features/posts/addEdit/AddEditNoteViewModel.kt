@@ -6,7 +6,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.jfranco.sharetosave.domain.Note
-import com.jfranco.sharetosave.features.posts.shared.SharedDataRepository
 import com.jfranco.sharetosave.persistence.specification.NoteStore
 import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,22 +22,23 @@ import javax.inject.Inject
 class AddEditNoteViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     val noteStore: NoteStore,
-    private val sharedDataRepository: SharedDataRepository
 ) : ViewModel(), ContainerHost<AddEditNoteState, AddEditNoteSideEffect> {
 
-    private val existingNote: Note? = AddEditScreenDestination.argsFrom(savedStateHandle).note
+    private val arg: AddEditScreenDestinationArgs = AddEditScreenDestination.argsFrom(savedStateHandle)
+
+    val existingNote = arg.note
+    val sharedImage = arg.image
+    val sharedText = arg.text
 
     override val container = container<AddEditNoteState, AddEditNoteSideEffect>(
         initialState = run {
             val note = existingNote ?: run {
-                val sharedText = sharedDataRepository.sharedText.value
-                val sharedImageUri = sharedDataRepository.sharedImageUri.value
-                if (sharedText != null || sharedImageUri != null) {
+                if (sharedText != null || sharedImage != null) {
                     Note(
                         id = null,
                         title = sharedText,
                         content = null,
-                        image = sharedImageUri.toString(),
+                        image = sharedImage.toString(),
                         created = LocalDateTime.now(),
                         edited = null,
                         color = 0
@@ -68,8 +68,6 @@ class AddEditNoteViewModel @Inject constructor(
         savedStateHandle = savedStateHandle
     ) {
         Log.i("AddEditNoteViewModel", "Container initialized")
-        sharedDataRepository.setSharedText(null)
-        sharedDataRepository.setSharedImageUri(null)
 
         // Used to launch in parallel coroutines listening to the text fields changes
         coroutineScope {

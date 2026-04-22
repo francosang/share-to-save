@@ -1,6 +1,7 @@
 package com.jfranco.sharetosave.features.posts.addEdit
 
 import android.graphics.ImageDecoder
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
@@ -56,13 +57,16 @@ import com.jfranco.sharetosave.domain.Note
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.serialization.Serializable
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 import java.time.LocalDateTime
 
-
+@Serializable
 data class AddEditScreenDestinationArgs(
     val note: Note? = null,
+    val text: String? = null,
+    val image: Uri? = null,
 )
 
 @Destination<RootGraph>(
