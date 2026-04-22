@@ -5,40 +5,42 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import com.jfranco.sharetosave.persistence.specification.NoteStore
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.ContainerHost
 import org.orbitmvi.orbit.viewmodel.container
+import javax.inject.Inject
 
-class AddEditNoteViewModel(
-    savedStateHandle: SavedStateHandle
+@HiltViewModel
+class AddEditNoteViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    val noteStore: NoteStore
 ) : ViewModel(), ContainerHost<AddEditNoteState, AddEditNoteSideEffect> {
     // create a container
     override val container = container<AddEditNoteState, AddEditNoteSideEffect>(
         initialState = AddEditNoteState(),
         savedStateHandle = savedStateHandle
     ) {
-        coroutineScope {
-            launch {
-                snapshotFlow { state.title.text.text }.collectLatest { text ->
-                    reduce {
-                        state.copy(
-                            title = state.title.copy(
-                                text = TextFieldState(text.toString())
-                            )
-                        )
-                    }
-                }
-            }
+        Log.i("AddEditNoteViewModel", "Container initialized")
 
+        // Used to launch in parallel coroutines listening to the text fields changes
+        coroutineScope {
+            Log.i("AddEditNoteViewModel", "Coroutine scope launched")
             launch {
-                snapshotFlow { state.content.text.text }.collectLatest { text ->
+                combine(
+                    snapshotFlow { state.title.state.text },
+                    snapshotFlow { state.content.state.text }
+                ) { title, content ->
+                    title to content
+                }.collectLatest { (title, content) ->
                     reduce {
                         state.copy(
-                            content = state.content.copy(
-                                text = TextFieldState(text.toString())
-                            )
+                            saveEnabled = title.isNotBlank() or content.isNotBlank()
                         )
                     }
                 }
@@ -47,8 +49,6 @@ class AddEditNoteViewModel(
     }
 
     fun onEvent(event: AddEditNoteEvent) {
-        Log.i("AddEditNoteViewModel", "Event: $event")
-
         when (event) {
             is AddEditNoteEvent.ChangeColor ->
                 intent {
@@ -61,7 +61,7 @@ class AddEditNoteViewModel(
                 intent {
                     reduce {
                         val content = state.content.copy(
-                            isHintVisible = !event.focusState.isFocused && state.content.text.text.isBlank()
+                            isHintVisible = !event.focusState.isFocused && state.content.state.text.isBlank()
                         )
                         state.copy(content = content)
                     }
@@ -71,16 +71,22 @@ class AddEditNoteViewModel(
                 intent {
                     reduce {
                         val title = state.title.copy(
-                            isHintVisible = !event.focusState.isFocused && state.title.text.text.isBlank()
+                            isHintVisible = !event.focusState.isFocused && state.title.state.text.isBlank()
                         )
                         state.copy(title = title)
                     }
                 }
-            AddEditNoteEvent.SaveNote ->
+
+            is AddEditNoteEvent.SaveNote ->
                 intent {
                     Log.i("AddEditNoteViewModel", "SaveNote: $state")
-                }
 
+                    val note = noteStore.save(event.note)
+
+                    Log.i("AddEditNoteViewModel", "SaveNote: $note")
+
+                    postSideEffect(AddEditNoteSideEffect.NavigateBackWithResult(note))
+                }
         }
     }
 }

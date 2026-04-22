@@ -15,12 +15,13 @@ data class AddEditNoteState(
         hint = "Enter some content..."
     ),
     val color: Int = -1,
-    val isNoteSaved: Boolean = false
+    val isNoteSaved: Boolean = false,
+    val saveEnabled: Boolean = false
 ) : Parcelable
 
 @Parcelize
 data class NoteTextFieldState(
-    val text: TextFieldState = TextFieldState(""),
+    val state: TextFieldState = TextFieldState(""),
     val hint: String = "",
     val isHintVisible: Boolean = true
 ) : Parcelable {
@@ -29,18 +30,17 @@ data class NoteTextFieldState(
             parcel: Parcel,
             flags: Int
         ) {
-            parcel.writeString(text.text.toString())
+            parcel.writeString(state.text.toString())
             parcel.writeString(hint)
             parcel.writeInt(if (isHintVisible) 1 else 0)
         }
 
         override fun create(parcel: Parcel): NoteTextFieldState {
             return NoteTextFieldState(
-                text = TextFieldState(parcel.readString() ?: ""),
+                state = TextFieldState(parcel.readString() ?: ""),
                 hint = parcel.readString() ?: "",
                 isHintVisible = parcel.readInt() != 0
             )
         }
-
     }
 }

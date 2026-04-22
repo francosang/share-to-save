@@ -1,6 +1,7 @@
 package com.jfranco.sharetosave.features.posts.addEdit
 
+import com.jfranco.sharetosave.domain.Note
+
 sealed class AddEditNoteSideEffect {
-    data class ShowSnackBar(val message: String) : AddEditNoteSideEffect()
-    object SaveNote : AddEditNoteSideEffect()
+    class NavigateBackWithResult(val noteSaved: Note) : AddEditNoteSideEffect()
 }

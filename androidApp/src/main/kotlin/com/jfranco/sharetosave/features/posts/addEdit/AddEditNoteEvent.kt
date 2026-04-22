@@ -1,10 +1,12 @@
 package com.jfranco.sharetosave.features.posts.addEdit
 
 import androidx.compose.ui.focus.FocusState
+import com.jfranco.sharetosave.domain.Note
 
 sealed class AddEditNoteEvent {
-    data class ChangeTitleFocus(val focusState: FocusState) : AddEditNoteEvent()
-    data class ChangeContentFocus(val focusState: FocusState) : AddEditNoteEvent()
+    sealed class ChangeFocus : AddEditNoteEvent()
+    data class ChangeTitleFocus(val focusState: FocusState) : ChangeFocus()
+    data class ChangeContentFocus(val focusState: FocusState) : ChangeFocus()
     data class ChangeColor(val color: Int) : AddEditNoteEvent()
-    object SaveNote : AddEditNoteEvent()
+    data class SaveNote(val note: Note) : AddEditNoteEvent()
 }
