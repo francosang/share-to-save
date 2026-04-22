@@ -9,6 +9,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.parcelize")
+    id("androidx.room")
 }
 
 java {
@@ -61,12 +62,12 @@ android {
     }
 }
 
+room {
+    schemaDirectory("$projectDir/schemas")
+}
+
 dependencies {
     implementation(libs.sqldelight.android.driver)
-
-    // Voyager
-//    implementation(libs.voyager.navigator)
-//    implementation(libs.voyager.hilt)
 
     implementation(libs.compose.destinations.core)
     ksp(libs.compose.destinations.ksp)
@@ -80,6 +81,13 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+
+    // Room
+    implementation(libs.androidx.room)
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+
+    implementation(libs.material3)
 
     implementation(libs.androidx.core.splashscreen)
 

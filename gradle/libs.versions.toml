@@ -12,10 +12,12 @@ junit = "4.13.2"
 junitVersion = "1.2.1"
 activityCompose = "1.9.0"
 composeBom = "2024.06.00"
+material3 = "1.3.2"
 orbit = "10.0.0"
 sqlDelight = "2.0.2"
 voyager = "1.1.0-beta03"
 hilt = "2.57.1"
+room = "2.7.2"
 
 [libraries]
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
@@ -34,12 +36,14 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 compose-destinations-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "core" }
+material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 orbit-compose = { module = "org.orbit-mvi:orbit-compose", version.ref = "orbit" }
 orbit-core = { module = "org.orbit-mvi:orbit-core", version.ref = "orbit" }
 orbit-viewmodel = { module = "org.orbit-mvi:orbit-viewmodel", version.ref = "orbit" }
 sqldelight-android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqlDelight" }
-voyager-hilt = { module = "cafe.adriel.voyager:voyager-hilt", version.ref = "voyager" }
-voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyager" }
+androidx-room = { module = "androidx.room:room-ktx", version.ref = "room" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
