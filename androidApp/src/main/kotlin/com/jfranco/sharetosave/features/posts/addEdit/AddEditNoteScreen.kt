@@ -80,12 +80,8 @@ fun Screen(
     navigator: DestinationsNavigator,
     viewModel: AddEditNoteViewModel
 ) {
-    val noteColor = note?.color ?: -1
-
     val noteBgAnimation by animateColorAsState(
-        targetValue = Color(
-            if (noteColor != -1) noteColor else state.color
-        ),
+        targetValue = Color(state.color),
         animationSpec = tween(durationMillis = 300)
     )
 

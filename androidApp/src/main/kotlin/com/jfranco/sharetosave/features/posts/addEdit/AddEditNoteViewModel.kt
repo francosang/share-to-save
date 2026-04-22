@@ -5,12 +5,12 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import com.jfranco.sharetosave.domain.Note
 import com.jfranco.sharetosave.persistence.specification.NoteStore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.ContainerHost
 import org.orbitmvi.orbit.viewmodel.container
@@ -21,9 +21,26 @@ class AddEditNoteViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     val noteStore: NoteStore
 ) : ViewModel(), ContainerHost<AddEditNoteState, AddEditNoteSideEffect> {
-    // create a container
+
+    private val existingNote: Note? = savedStateHandle.get<Note>("note")
+
     override val container = container<AddEditNoteState, AddEditNoteSideEffect>(
-        initialState = AddEditNoteState(),
+        initialState = existingNote?.takeIf { it.id != null }?.let { note ->
+            AddEditNoteState(
+                title = NoteTextFieldState(
+                    state = TextFieldState(note.title.orEmpty()),
+                    hint = "Enter title...",
+                    isHintVisible = note.title.isNullOrBlank()
+                ),
+                content = NoteTextFieldState(
+                    state = TextFieldState(note.content.orEmpty()),
+                    hint = "Enter some content...",
+                    isHintVisible = note.content.isNullOrBlank()
+                ),
+                color = note.color,
+                saveEnabled = !note.title.isNullOrBlank() || !note.content.isNullOrBlank()
+            )
+        } ?: AddEditNoteState(),
         savedStateHandle = savedStateHandle
     ) {
         Log.i("AddEditNoteViewModel", "Container initialized")
