@@ -1,7 +1,6 @@
 package com.jfranco.sharetosave.features.posts.list
 
 import android.content.Intent
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -34,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -45,7 +43,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.coroutines.launch
 import org.orbitmvi.orbit.compose.collectAsState
 import org.orbitmvi.orbit.compose.collectSideEffect
 
@@ -55,13 +52,10 @@ fun NotesListScreen(
     navigator: DestinationsNavigator
 ) {
 
-    Log.d("MyApp", "NotesListScreen ------------------")
-
     val viewModel = hiltViewModel<NotesViewModel>()
     val state by viewModel.collectAsState()
 
     val snackBarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     val context = LocalContext.current
 
@@ -75,6 +69,16 @@ fun NotesListScreen(
                         )
                     )
                 )
+
+            is NotesSideEffect.ShowSnackbar -> {
+                val result = snackBarHostState.showSnackbar(
+                    message = sideEffect.message,
+                    actionLabel = sideEffect.actionLabel
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    viewModel.onEvent(NotesEvent.RestoreNote)
+                }
+            }
         }
     }
 
@@ -161,25 +165,6 @@ fun NotesListScreen(
                             },
                             onDeleteClicked = {
                                 viewModel.onEvent(NotesEvent.DeleteNote(note))
-
-                                // TODO: move to an effect
-                                // after deleting the note, show the snackbar
-                                scope.launch {
-                                    Log.d("message", "delete")
-                                    val result = snackBarHostState.showSnackbar(
-                                        message = "Note Deleted!",
-                                        actionLabel = "Undo"
-                                    )
-
-                                    when (result) {
-                                        SnackbarResult.ActionPerformed -> {
-                                            viewModel.onEvent(NotesEvent.RestoreNote)
-                                        }
-
-                                        else -> {}
-                                    }
-
-                                }
                             }
                         )
 

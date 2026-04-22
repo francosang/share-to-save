@@ -46,6 +46,8 @@ class NotesViewModel @Inject constructor(
                     reduce {
                         state.copy(recentDeletedNote = event.note)
                     }
+
+                    postSideEffect(NotesSideEffect.ShowSnackbar("Note Deleted!", "Undo"))
                 }
 
             is NotesEvent.Order ->

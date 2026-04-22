@@ -4,4 +4,5 @@ import com.jfranco.sharetosave.domain.Note
 
 sealed class NotesSideEffect {
     data class NavigateToAddEditNoteScreen(val note: Note?) : NotesSideEffect()
+    data class ShowSnackbar(val message: String, val actionLabel: String) : NotesSideEffect()
 }
