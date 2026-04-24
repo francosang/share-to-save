@@ -244,10 +244,10 @@ T1|x|remove SQLDelight residue from `build.gradle.kts` + `libs.versions.toml`|-
 T2|x|migrate `Note.image: String?` → `attachmentPath: String?` + `attachmentMimeType: String?`; Room migration version bump|V5,V18
 T3|x|extend `FileStorageHelper` → any MIME type, pick subdir by type|V5,V18
 T4|x|update `AddEditScreenDestinationArgs`: replace `image: Uri?` → `fileUri: Uri?` + `mimeType: String?` + `fromShare: Boolean`|V3,V7
-T5|.|update share extraction in `MainActivity`/`MainViewModel`: extract `EXTRA_STREAM`, `EXTRA_TEXT`, intent `type`|V3,§I.intent
-T6|.|impl auto-save in `AddEditNoteViewModel.init{}` when `fromShare=true`: copy file → insert note → store id|V11
+T5|x|update share extraction in `MainActivity`/`MainViewModel`: extract `EXTRA_STREAM`, `EXTRA_TEXT`, intent `type`|V3,§I.intent
+T6|x|impl auto-save in `AddEditNoteViewModel.init{}` when `fromShare=true`: copy file → insert note → store id|V11
 T7|x|apply `noteOrder.comparator()` in `NotesViewModel` before state reduce|V4
-T8|.|fix `AddEditNoteViewModel` init: seed title/content/color from existing `note` arg|V7
+T8|x|fix `AddEditNoteViewModel` init: seed title/content/color from existing `note` arg|V7
 T9|.|add `TagEntity`, `TagDao`, `NoteTagCrossRef`, Room migration|§I.TagDao
 T10|.|impl `TagStore` + `TagStoreImpl`|§I.TagStore
 T11|.|add `TagsViewModel` for drawer tag CRUD|§I.ViewModels

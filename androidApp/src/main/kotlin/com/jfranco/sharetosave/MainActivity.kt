@@ -16,7 +16,6 @@ import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestination
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import dagger.hilt.android.AndroidEntryPoint
 import org.orbitmvi.orbit.compose.collectSideEffect
@@ -45,8 +44,8 @@ class MainActivity : ComponentActivity() {
                             AddEditScreenDestination(
                                 AddEditScreenDestinationArgs(
                                     text = it.text,
-                                    fileUri = it.image,
-                                    mimeType = null,
+                                    fileUri = it.fileUri,
+                                    mimeType = it.mimeType,
                                     fromShare = true,
                                 )
                             )
@@ -85,13 +84,15 @@ class MainActivity : ComponentActivity() {
 
         // Check if this is a share intent
         if (action == Intent.ACTION_SEND) {
-            val imageUri: Uri? = intent.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri
+            val fileUri: Uri? = intent.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri
             val sharedText: String? = intent.getStringExtra(Intent.EXTRA_TEXT)
+            val mimeType: String? = intent.type
 
-            Log.i("MyApp", "MainActivity - Received imageUri: $imageUri")
+            Log.i("MyApp", "MainActivity - Received fileUri: $fileUri")
             Log.i("MyApp", "MainActivity - Received sharedText: $sharedText")
+            Log.i("MyApp", "MainActivity - Received mimeType: $mimeType")
 
-            mainViewModel.onEvent(MainEvent.OnDataShared(sharedText, imageUri))
+            mainViewModel.onEvent(MainEvent.OnDataShared(sharedText, fileUri, mimeType))
 
             setIntent(null)
         }

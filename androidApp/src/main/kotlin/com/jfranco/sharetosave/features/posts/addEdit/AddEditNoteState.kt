@@ -19,7 +19,9 @@ data class AddEditNoteState(
     val color: Int = -1,
     val noteId: Long? = null,
     val isNoteSaved: Boolean = false,
-    val saveEnabled: Boolean = false
+    val saveEnabled: Boolean = false,
+    val isFromShare: Boolean = false,
+    val isAttachmentLoading: Boolean = false
 ) : Parcelable
 
 @Parcelize

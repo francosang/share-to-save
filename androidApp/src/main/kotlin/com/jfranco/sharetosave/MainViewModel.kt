@@ -10,11 +10,11 @@ import javax.inject.Inject
 
 
 sealed class MainViewSideEffect {
-    class OnDataShared(val text: String?, val image: Uri?) : MainViewSideEffect()
+    class OnDataShared(val text: String?, val fileUri: Uri?, val mimeType: String?) : MainViewSideEffect()
 }
 
 sealed class MainEvent {
-    class OnDataShared(val text: String?, val image: Uri?) : MainEvent()
+    class OnDataShared(val text: String?, val fileUri: Uri?, val mimeType: String?) : MainEvent()
 }
 
 @HiltViewModel
@@ -28,7 +28,7 @@ class MainViewModel @Inject constructor() : ViewModel(), ContainerHost<Unit, Mai
         when (event) {
             is MainEvent.OnDataShared ->
                 intent {
-                    postSideEffect(MainViewSideEffect.OnDataShared(event.text, event.image))
+                    postSideEffect(MainViewSideEffect.OnDataShared(event.text, event.fileUri, event.mimeType))
                 }
         }
     }

@@ -1,14 +1,10 @@
 package com.jfranco.sharetosave.features.posts.addEdit
 
-import android.graphics.ImageDecoder
 import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,6 +26,7 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -41,18 +38,17 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.jfranco.sharetosave.domain.Note
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
@@ -213,41 +209,28 @@ private fun Content(
             }
         }
 
-        if (state.attachmentPath != null) {
-            Log.d("MyApp", "AddEditScreen: attachmentPath: ${state.attachmentPath}")
-
-            val localUri = state.attachmentPath.toUri()
-            val context = LocalContext.current
-            val btm = if (Build.VERSION.SDK_INT < 28) {
-                MediaStore.Images
-                    .Media.getBitmap(context.contentResolver, localUri)
-            } else {
-                val source = ImageDecoder
-                    .createSource(context.contentResolver, localUri)
-                ImageDecoder.decodeBitmap(source)
-            }
-
+        if (state.isAttachmentLoading || state.attachmentPath != null) {
             Spacer(Modifier.height(8.dp))
 
-            Image(
-                bitmap = btm.asImageBitmap(),
-                contentDescription = "Shared image",
-                contentScale = ContentScale.Crop,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-            )
-
-//            AsyncImage(
-//                model = btm.asImageBitmap(),
-//                contentDescription = "Shared image",
-//                contentScale = ContentScale.Crop,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(200.dp)
-//                    .clip(RoundedCornerShape(8.dp))
-//            )
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                if (state.isAttachmentLoading) {
+                    CircularProgressIndicator()
+                } else {
+                    AsyncImage(
+                        model = state.attachmentPath,
+                        contentDescription = "Attachment",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
         }
 
         Spacer(Modifier.height(16.dp))

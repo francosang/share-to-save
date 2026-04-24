@@ -1,18 +1,24 @@
 package com.jfranco.sharetosave.features.posts.addEdit
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import com.jfranco.sharetosave.di.IoDispatcher
+import com.jfranco.sharetosave.domain.FileStorageHelper
 import com.jfranco.sharetosave.domain.Note
 import com.jfranco.sharetosave.persistence.specification.NoteStore
 import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.orbitmvi.orbit.ContainerHost
 import org.orbitmvi.orbit.viewmodel.container
 import java.time.LocalDateTime
@@ -22,6 +28,8 @@ import javax.inject.Inject
 class AddEditNoteViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     val noteStore: NoteStore,
+    @ApplicationContext val context: Context,
+    @IoDispatcher val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel(), ContainerHost<AddEditNoteState, AddEditNoteSideEffect> {
 
     private val arg: AddEditScreenDestinationArgs = AddEditScreenDestination.argsFrom(savedStateHandle)
@@ -34,23 +42,9 @@ class AddEditNoteViewModel @Inject constructor(
 
     override val container = container<AddEditNoteState, AddEditNoteSideEffect>(
         initialState = run {
-            val note = existingNote ?: run {
-                if (sharedText != null || sharedFileUri != null) {
-                    Note(
-                        id = null,
-                        title = sharedText,
-                        content = null,
-                        attachmentPath = sharedFileUri?.toString(),
-                        attachmentMimeType = sharedMimeType,
-                        created = LocalDateTime.now(),
-                        edited = null,
-                        color = 0
-                    )
-                } else {
-                    null
-                }
-            }
+            val note = existingNote
 
+            val sharedContent = if (isFromShare) sharedText.orEmpty() else ""
             AddEditNoteState(
                 title = NoteTextFieldState(
                     state = TextFieldState(note?.title.orEmpty()),
@@ -58,24 +52,26 @@ class AddEditNoteViewModel @Inject constructor(
                     isHintVisible = note?.title.isNullOrBlank()
                 ),
                 content = NoteTextFieldState(
-                    state = TextFieldState(note?.content.orEmpty()),
+                    state = TextFieldState(note?.content ?: sharedContent),
                     hint = "Enter some content...",
-                    isHintVisible = note?.content.isNullOrBlank()
+                    isHintVisible = (note?.content ?: sharedContent).isBlank()
                 ),
                 attachmentPath = note?.attachmentPath,
-                attachmentMimeType = note?.attachmentMimeType,
-                color = note?.color ?: -1,
+                attachmentMimeType = note?.attachmentMimeType ?: if (isFromShare) sharedMimeType else null,
+                color = note?.color ?: 0,
+                noteId = note?.id,
                 saveEnabled = !note?.title.isNullOrBlank() || !note?.content.isNullOrBlank()
-                    || note?.attachmentPath != null
+                    || note?.attachmentPath != null,
+                isFromShare = isFromShare
             )
         },
         savedStateHandle = savedStateHandle
     ) {
         Log.i("AddEditNoteViewModel", "Container initialized")
 
-        // Used to launch in parallel coroutines listening to the text fields changes
         coroutineScope {
             Log.i("AddEditNoteViewModel", "Coroutine scope launched")
+
             launch {
                 combine(
                     snapshotFlow { state.title.state.text },
@@ -86,6 +82,43 @@ class AddEditNoteViewModel @Inject constructor(
                     reduce {
                         state.copy(
                             saveEnabled = title.isNotBlank() or content.isNotBlank()
+                        )
+                    }
+                }
+            }
+
+            if (isFromShare) {
+                launch {
+                    if (sharedFileUri != null) {
+                        reduce { state.copy(isAttachmentLoading = true) }
+                    }
+
+                    val absolutePath = sharedFileUri?.let { uri ->
+                        withContext(ioDispatcher) {
+                            FileStorageHelper.saveSharedFileInternal(context, uri, sharedMimeType)
+                        }
+                    }
+
+                    val note = Note(
+                        id = null,
+                        title = null,
+                        content = sharedText,
+                        attachmentPath = absolutePath,
+                        attachmentMimeType = sharedMimeType,
+                        created = LocalDateTime.now(),
+                        edited = null,
+                        color = 0
+                    )
+
+                    val savedNote = noteStore.save(note)
+
+                    reduce {
+                        state.copy(
+                            attachmentPath = savedNote.attachmentPath,
+                            attachmentMimeType = savedNote.attachmentMimeType,
+                            noteId = savedNote.id,
+                            isNoteSaved = true,
+                            isAttachmentLoading = false
                         )
                     }
                 }
