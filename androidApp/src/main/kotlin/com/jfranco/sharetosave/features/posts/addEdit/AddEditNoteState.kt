@@ -14,7 +14,8 @@ data class AddEditNoteState(
     val content: NoteTextFieldState = NoteTextFieldState(
         hint = "Enter some content..."
     ),
-    val image: String? = null,
+    val attachmentPath: String? = null,
+    val attachmentMimeType: String? = null,
     val color: Int = -1,
     val noteId: Long? = null,
     val isNoteSaved: Boolean = false,

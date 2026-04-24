@@ -38,7 +38,8 @@ class AddEditNoteViewModel @Inject constructor(
                         id = null,
                         title = sharedText,
                         content = null,
-                        image = sharedImage.toString(),
+                        attachmentPath = sharedImage?.toString(),
+                        attachmentMimeType = null,
                         created = LocalDateTime.now(),
                         edited = null,
                         color = 0
@@ -59,10 +60,11 @@ class AddEditNoteViewModel @Inject constructor(
                     hint = "Enter some content...",
                     isHintVisible = note?.content.isNullOrBlank()
                 ),
-                image = note?.image,
+                attachmentPath = note?.attachmentPath,
+                attachmentMimeType = note?.attachmentMimeType,
                 color = note?.color ?: -1,
                 saveEnabled = !note?.title.isNullOrBlank() || !note?.content.isNullOrBlank()
-                    || note?.image != null
+                    || note?.attachmentPath != null
             )
         },
         savedStateHandle = savedStateHandle

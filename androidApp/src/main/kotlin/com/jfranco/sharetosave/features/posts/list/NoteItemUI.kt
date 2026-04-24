@@ -52,9 +52,9 @@ fun NoteItemUI(
                     .padding(16.dp)
             ) {
                 Column {
-                    if (note.image != null) {
+                    if (note.attachmentPath != null) {
                         AsyncImage(
-                            model = note.image,
+                            model = note.attachmentPath,
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -126,7 +126,8 @@ fun NoteItemUIPreview() {
             id = 1,
             title = "Titulo",
             content = "Contenido de la nota",
-            image = null,
+            attachmentPath = null,
+            attachmentMimeType = null,
             created = LocalDateTime.now(),
             edited = null,
             color = -1,

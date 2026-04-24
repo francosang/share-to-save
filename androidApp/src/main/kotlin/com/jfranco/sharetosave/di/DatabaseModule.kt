@@ -3,6 +3,7 @@ package com.jfranco.sharetosave.di
 import android.content.Context
 import androidx.room.Room
 import com.jfranco.sharetosave.persistence.implementation.AppDatabase
+import com.jfranco.sharetosave.persistence.implementation.MIGRATION_1_2
 import com.jfranco.sharetosave.persistence.implementation.dao.NoteDao
 import dagger.Module
 import dagger.Provides
@@ -25,7 +26,7 @@ class DatabaseModule {
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java, databaseName
-        ).build()
+        ).addMigrations(MIGRATION_1_2).build()
     }
 
     @Singleton

@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(./gradlew :androidApp:assembleDebug)"
     ]
   }
 }

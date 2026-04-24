@@ -135,7 +135,8 @@ fun Screen(
                                     id = state.noteId,
                                     title = state.title.state.text.toString(),
                                     content = state.content.state.text.toString(),
-                                    image = state.image,
+                                    attachmentPath = state.attachmentPath,
+                                    attachmentMimeType = state.attachmentMimeType,
                                     created = LocalDateTime.now(),
                                     edited = null,
                                     color = state.color
@@ -210,10 +211,10 @@ private fun Content(
             }
         }
 
-        if (state.image != null) {
-            Log.d("MyApp", "AddEditScreen: image: ${state.image}")
+        if (state.attachmentPath != null) {
+            Log.d("MyApp", "AddEditScreen: attachmentPath: ${state.attachmentPath}")
 
-            val localUri = state.image.toUri()
+            val localUri = state.attachmentPath.toUri()
             val context = LocalContext.current
             val btm = if (Build.VERSION.SDK_INT < 28) {
                 MediaStore.Images
