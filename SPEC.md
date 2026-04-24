@@ -234,6 +234,7 @@ V18: `Note.attachmentMimeType` ! reflect actual MIME type of stored file. ! set 
 V19: WorkManager reminder workers tagged `"reminder_{reminderId}"` — cancel by tag. ⊥ duplicate schedules.
 V20: `POST_NOTIFICATIONS` ! request at runtime before first reminder schedule (Android 13+).
 V21: UI ⊥ construct `Note` with system-set fields (`created`, `edited`, `id`). `AddEditNoteEvent.SaveNote` carries `NoteInput` (UI-owned fields only). `NoteStore.save(input, existingId?)` sets timestamps + id.
+V22: `fromShare` auto-save Note ! read all UI-owned fields (`color`, `title`, `content`) from current `state` at save time. ⊥ hardcoded defaults (e.g. `color=0`).
 
 ---
 
@@ -270,9 +271,19 @@ T27|.|move inline Snackbar trigger → `NotesSideEffect.ShowSnackbar` if not don
 T28|.|add unit tests: `NoteStoreImpl`, `TagStoreImpl`, `ReminderStoreImpl`, sort comparators, `FileStorageHelper`, `ContentType` derivation|V8
 T29|.|remove or wire unused `ActionHandler` base class|-
 T30|.|intro `NoteInput(title, content, color, attachmentPath, attachmentMimeType, tagIds)` DTO; replace `Note` arg in `AddEditNoteEvent.SaveNote`; `NoteStore.save(input, existingId?)` sets `created`/`edited`/`id`|V21
+T31|.|fix color bug: replace hardcoded `color=0` in `fromShare` auto-save with `state.color`|V22,B1
+T32|.|extend domain: introduce `NoteAttachment(path: String, mimeType: String?)` + `Note.attachments: List<NoteAttachment>`; deprecate `attachmentPath`/`attachmentMimeType` single fields|V5,V18
+T33|.|Room: add `NoteAttachmentEntity`, `NoteAttachmentDao`; migration; update `NoteStoreImpl` to persist + load attachment list|§I.NoteDao
+T34|.|update `AddEditScreenDestinationArgs`: `fileUri: Uri?`+`mimeType: String?` → `fileUris: List<Uri>`, `mimeTypes: List<String>`|V3,V7
+T35|.|update share extraction (`MainActivity`/`MainViewModel`): handle both `ACTION_SEND` single + `ACTION_SEND_MULTIPLE` → list of URIs|V3,§I.intent
+T36|.|update `FileStorageHelper`: add `saveSharedFilesInternal(uris: List<Uri>, mimeTypes: List<String?>)` → `List<String>`|V5
+T37|.|update `AddEditNoteViewModel` init: copy + save list of files; `Note.attachments` populated from result|V11,V22
+T38|.|update `AddEditScreen` UI: attachment gallery (horizontal scroll, thumbnails); add/remove individual attachments|V17
+T39|.|UX audit + polish: empty state in `NotesListScreen`, skeleton/loading indicators, enter/exit transitions, color picker a11y labels|V6
 
 ---
 
 ## §B BUGS
 
 id|date|cause|fix
+B1|2026-04-25|`fromShare` auto-save constructs `Note(color=0)` (hardcoded, line 110 AddEditNoteViewModel) → ignores state.color → user color pick lost|V22
