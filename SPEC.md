@@ -240,13 +240,13 @@ V21: UI ⊥ construct `Note` with system-set fields (`created`, `edited`, `id`).
 ## §T TASKS
 
 id|status|task|cites
-T1|.|remove SQLDelight residue from `build.gradle.kts` + `libs.versions.toml`|-
+T1|x|remove SQLDelight residue from `build.gradle.kts` + `libs.versions.toml`|-
 T2|.|migrate `Note.image: String?` → `attachmentPath: String?` + `attachmentMimeType: String?`; Room migration version bump|V5,V18
 T3|.|extend `FileStorageHelper` → any MIME type, pick subdir by type|V5,V18
 T4|.|update `AddEditScreenDestinationArgs`: replace `image: Uri?` → `fileUri: Uri?` + `mimeType: String?` + `fromShare: Boolean`|V3,V7
 T5|.|update share extraction in `MainActivity`/`MainViewModel`: extract `EXTRA_STREAM`, `EXTRA_TEXT`, intent `type`|V3,§I.intent
 T6|.|impl auto-save in `AddEditNoteViewModel.init{}` when `fromShare=true`: copy file → insert note → store id|V11
-T7|.|apply `noteOrder.comparator()` in `NotesViewModel` before state reduce|V4
+T7|x|apply `noteOrder.comparator()` in `NotesViewModel` before state reduce|V4
 T8|.|fix `AddEditNoteViewModel` init: seed title/content/color from existing `note` arg|V7
 T9|.|add `TagEntity`, `TagDao`, `NoteTagCrossRef`, Room migration|§I.TagDao
 T10|.|impl `TagStore` + `TagStoreImpl`|§I.TagStore
@@ -264,7 +264,7 @@ T21|.|add drawer to `NotesListScreen`: All Notes / Tags / Reminders sections|§I
 T22|.|impl `ContentType` derivation helper; show icons in `NoteItemUI`|V17
 T23|.|add tag filter to `NotesViewModel` + `noteStore.observeNotesByTag()`|§I.NoteStore
 T24|.|request `POST_NOTIFICATIONS` before first reminder schedule|V20
-T25|.|verify `onNewIntent` wired to `MainViewModel` for repeat shares|V2,V3
+T25|x|verify `onNewIntent` wired to `MainViewModel` for repeat shares|V2,V3
 T26|.|verify `NoteItemUI` renders attachment (image via Coil, video thumbnail, audio icon, file icon)|V17
 T27|.|move inline Snackbar trigger → `NotesSideEffect.ShowSnackbar` if not done|V6
 T28|.|add unit tests: `NoteStoreImpl`, `TagStoreImpl`, `ReminderStoreImpl`, sort comparators, `FileStorageHelper`, `ContentType` derivation|V8
