@@ -66,7 +66,9 @@ import java.time.LocalDateTime
 data class AddEditScreenDestinationArgs(
     val note: Note? = null,
     val text: String? = null,
-    val image: Uri? = null,
+    val fileUri: Uri? = null,
+    val mimeType: String? = null,
+    val fromShare: Boolean = false,
 )
 
 @Destination<RootGraph>(

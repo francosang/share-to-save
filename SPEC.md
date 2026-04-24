@@ -243,7 +243,7 @@ id|status|task|cites
 T1|x|remove SQLDelight residue from `build.gradle.kts` + `libs.versions.toml`|-
 T2|x|migrate `Note.image: String?` → `attachmentPath: String?` + `attachmentMimeType: String?`; Room migration version bump|V5,V18
 T3|x|extend `FileStorageHelper` → any MIME type, pick subdir by type|V5,V18
-T4|.|update `AddEditScreenDestinationArgs`: replace `image: Uri?` → `fileUri: Uri?` + `mimeType: String?` + `fromShare: Boolean`|V3,V7
+T4|x|update `AddEditScreenDestinationArgs`: replace `image: Uri?` → `fileUri: Uri?` + `mimeType: String?` + `fromShare: Boolean`|V3,V7
 T5|.|update share extraction in `MainActivity`/`MainViewModel`: extract `EXTRA_STREAM`, `EXTRA_TEXT`, intent `type`|V3,§I.intent
 T6|.|impl auto-save in `AddEditNoteViewModel.init{}` when `fromShare=true`: copy file → insert note → store id|V11
 T7|x|apply `noteOrder.comparator()` in `NotesViewModel` before state reduce|V4

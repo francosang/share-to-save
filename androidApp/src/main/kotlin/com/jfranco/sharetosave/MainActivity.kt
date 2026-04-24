@@ -45,7 +45,9 @@ class MainActivity : ComponentActivity() {
                             AddEditScreenDestination(
                                 AddEditScreenDestinationArgs(
                                     text = it.text,
-                                    image = it.image,
+                                    fileUri = it.image,
+                                    mimeType = null,
+                                    fromShare = true,
                                 )
                             )
                         )

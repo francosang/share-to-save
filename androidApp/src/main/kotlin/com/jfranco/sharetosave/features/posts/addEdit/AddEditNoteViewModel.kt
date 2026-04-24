@@ -27,19 +27,21 @@ class AddEditNoteViewModel @Inject constructor(
     private val arg: AddEditScreenDestinationArgs = AddEditScreenDestination.argsFrom(savedStateHandle)
 
     val existingNote = arg.note
-    val sharedImage = arg.image
+    val sharedFileUri = arg.fileUri
+    val sharedMimeType = arg.mimeType
     val sharedText = arg.text
+    val isFromShare = arg.fromShare
 
     override val container = container<AddEditNoteState, AddEditNoteSideEffect>(
         initialState = run {
             val note = existingNote ?: run {
-                if (sharedText != null || sharedImage != null) {
+                if (sharedText != null || sharedFileUri != null) {
                     Note(
                         id = null,
                         title = sharedText,
                         content = null,
-                        attachmentPath = sharedImage?.toString(),
-                        attachmentMimeType = null,
+                        attachmentPath = sharedFileUri?.toString(),
+                        attachmentMimeType = sharedMimeType,
                         created = LocalDateTime.now(),
                         edited = null,
                         color = 0
