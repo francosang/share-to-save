@@ -252,7 +252,7 @@ T7|x|apply `noteOrder.comparator()` in `NotesViewModel` before state reduce|V4
 T8|x|fix `AddEditNoteViewModel` init: seed title/content/color from existing `note` arg|V7
 T9|x|add `TagEntity`, `TagDao`, `NoteTagCrossRef`, Room migration|§I.TagDao
 T10|x|impl `TagStore` + `TagStoreImpl`|§I.TagStore
-T11|.|add `TagsViewModel` for drawer tag CRUD|§I.ViewModels
+T11|x|add `TagsViewModel` for drawer tag CRUD|§I.ViewModels
 T12|.|add tag picker panel in `AddEditScreen` (expandable, auto-expanded when `fromShare=true`)|V12,V14
 T13|.|wire tag toggle → immediate `noteStore.setNoteTags()` when `fromShare=true`|V12
 T14|.|add `ReminderEntity`, `ReminderDao`, Room migration|§I.ReminderDao
