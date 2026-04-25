@@ -253,8 +253,8 @@ T8|x|fix `AddEditNoteViewModel` init: seed title/content/color from existing `no
 T9|x|add `TagEntity`, `TagDao`, `NoteTagCrossRef`, Room migration|§I.TagDao
 T10|x|impl `TagStore` + `TagStoreImpl`|§I.TagStore
 T11|x|add `TagsViewModel` for drawer tag CRUD|§I.ViewModels
-T12|.|add tag picker panel in `AddEditScreen` (expandable, auto-expanded when `fromShare=true`)|V12,V14
-T13|.|wire tag toggle → immediate `noteStore.setNoteTags()` when `fromShare=true`|V12
+T12|x|add tag picker panel in `AddEditScreen` (expandable, auto-expanded when `fromShare=true`)|V12,V14
+T13|x|wire tag toggle → immediate `noteStore.setNoteTags()` when `fromShare=true`|V12
 T14|.|add `ReminderEntity`, `ReminderDao`, Room migration|§I.ReminderDao
 T15|.|impl `ReminderStore` + `ReminderStoreImpl`|§I.ReminderStore
 T16|.|add `ReminderWorker` (WorkManager): post notification + delete past reminder from DB|V15
@@ -280,7 +280,7 @@ T35|.|update share extraction (`MainActivity`/`MainViewModel`): handle both `ACT
 T36|.|update `FileStorageHelper`: add `saveSharedFilesInternal(uris: List<Uri>, mimeTypes: List<String?>)` → `List<String>`|V5
 T37|.|update `AddEditNoteViewModel` init: copy + save list of files; `Note.attachments` populated from result|V11,V22
 T38|.|update `AddEditScreen` UI: attachment gallery (horizontal scroll, thumbnails); add/remove individual attachments|V17
-T39|.|UX audit + polish: empty state in `NotesListScreen`, skeleton/loading indicators, enter/exit transitions, color picker a11y labels|V6
+T39|.|UX audit + polish: empty state in `NotesListScreen`, skeleton/loading indicators, enter/exit transitions, color picker a11y labels; tag picker empty state: show "+ New tag" affordance (chip or link to drawer) when `tags.isEmpty()`|V6
 T40|x|fix `NotesScreen.collectSideEffect`: move `showSnackbar()` into `rememberCoroutineScope().launch{}` so nav side effects dispatch independently while snackbar visible|V23,B2
 
 ---

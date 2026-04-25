@@ -21,13 +21,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.jfranco.sharetosave.domain.Note
+import com.jfranco.sharetosave.domain.Tag
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -156,6 +164,12 @@ fun Screen(
                 },
                 onColorChanged = { colorInt ->
                     viewModel.onEvent(AddEditNoteEvent.ChangeColor(colorInt))
+                },
+                onToggleTag = { tagId ->
+                    viewModel.onEvent(AddEditNoteEvent.ToggleTag(tagId))
+                },
+                onToggleTagPanel = {
+                    viewModel.onEvent(AddEditNoteEvent.ToggleTagPanel)
                 }
             )
         }
@@ -167,9 +181,10 @@ private fun Content(
     padding: PaddingValues,
     state: AddEditNoteState,
     onColorChanged: (Int) -> Unit,
-    onFocusChange: (AddEditNoteEvent.ChangeFocus) -> Unit
+    onFocusChange: (AddEditNoteEvent.ChangeFocus) -> Unit,
+    onToggleTag: (Long) -> Unit,
+    onToggleTagPanel: () -> Unit,
 ) {
-    //making a Row to select colors
     Column(
         modifier = Modifier
             .padding(padding)
@@ -182,7 +197,6 @@ private fun Content(
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            //make circles for each color we have
             Note.noteColors.forEach { color ->
                 val colorInt = color.toArgb()
 
@@ -195,19 +209,26 @@ private fun Content(
                         .border(
                             width = 4.dp,
                             color = if (state.color == colorInt) {
-                                Color.Black  //color is selected
+                                Color.Black
                             } else {
-                                Color.Transparent  //color is deselected
+                                Color.Transparent
                             },
                             shape = CircleShape
                         )
                         .clickable {
                             onColorChanged(colorInt)
                         }
-
                 )
             }
         }
+
+        TagPickerPanel(
+            tags = state.tags,
+            selectedTagIds = state.selectedTagIds,
+            isExpanded = state.isTagPanelExpanded,
+            onTogglePanel = onToggleTagPanel,
+            onToggleTag = onToggleTag,
+        )
 
         if (state.isAttachmentLoading || state.attachmentPath != null) {
             Spacer(Modifier.height(8.dp))
@@ -233,9 +254,8 @@ private fun Content(
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(8.dp))
 
-        // For Title
         HintUI(
             state = state.title.state,
             hint = state.title.hint,
@@ -249,7 +269,6 @@ private fun Content(
 
         Spacer(Modifier.height(16.dp))
 
-        // For Content
         HintUI(
             state = state.content.state,
             hint = state.content.hint,
@@ -261,5 +280,64 @@ private fun Content(
             lineLimits = TextFieldLineLimits.MultiLine(),
             modifier = Modifier.fillMaxHeight()
         )
+    }
+}
+
+@Composable
+private fun TagPickerPanel(
+    tags: List<Tag>,
+    selectedTagIds: List<Long>,
+    isExpanded: Boolean,
+    onTogglePanel: () -> Unit,
+    onToggleTag: (Long) -> Unit,
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onTogglePanel)
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text("Tags", style = MaterialTheme.typography.labelLarge)
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp
+                              else Icons.Default.KeyboardArrowDown,
+                contentDescription = if (isExpanded) "Collapse tags" else "Expand tags"
+            )
+        }
+        AnimatedVisibility(visible = isExpanded) {
+            if (tags.isEmpty()) {
+                Text(
+                    "No tags yet",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            } else {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .wrapContentHeight()
+                        .padding(bottom = 8.dp)
+                ) {
+                    items(tags) { tag ->
+                        val selected = tag.id != null && tag.id in selectedTagIds
+                        FilterChip(
+                            selected = selected,
+                            onClick = { tag.id?.let { onToggleTag(it) } },
+                            label = { Text(tag.name) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Color(tag.color).copy(alpha = 0.4f)
+                            ),
+                            leadingIcon = if (selected) {
+                                { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(FilterChipDefaults.IconSize)) }
+                            } else null
+                        )
+                    }
+                }
+            }
+        }
     }
 }

@@ -10,6 +10,7 @@ import com.jfranco.sharetosave.di.IoDispatcher
 import com.jfranco.sharetosave.domain.FileStorageHelper
 import com.jfranco.sharetosave.domain.Note
 import com.jfranco.sharetosave.persistence.specification.NoteStore
+import com.jfranco.sharetosave.persistence.specification.TagStore
 import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,18 +28,19 @@ import javax.inject.Inject
 @HiltViewModel
 class AddEditNoteViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    val noteStore: NoteStore,
-    @ApplicationContext val context: Context,
-    @IoDispatcher val ioDispatcher: CoroutineDispatcher,
+    private val noteStore: NoteStore,
+    private val tagStore: TagStore,
+    @ApplicationContext private val context: Context,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel(), ContainerHost<AddEditNoteState, AddEditNoteSideEffect> {
 
     private val arg: AddEditScreenDestinationArgs = AddEditScreenDestination.argsFrom(savedStateHandle)
 
-    val existingNote = arg.note
-    val sharedFileUri = arg.fileUri
-    val sharedMimeType = arg.mimeType
-    val sharedText = arg.text
-    val isFromShare = arg.fromShare
+    private val existingNote = arg.note
+    private val sharedFileUri = arg.fileUri
+    private val sharedMimeType = arg.mimeType
+    private val sharedText = arg.text
+    private val isFromShare = arg.fromShare
 
     override val container = container<AddEditNoteState, AddEditNoteSideEffect>(
         initialState = run {
@@ -62,7 +64,8 @@ class AddEditNoteViewModel @Inject constructor(
                 noteId = note?.id,
                 saveEnabled = !note?.title.isNullOrBlank() || !note?.content.isNullOrBlank()
                     || note?.attachmentPath != null,
-                isFromShare = isFromShare
+                isFromShare = isFromShare,
+                isTagPanelExpanded = isFromShare,
             )
         },
         savedStateHandle = savedStateHandle
@@ -84,6 +87,21 @@ class AddEditNoteViewModel @Inject constructor(
                             saveEnabled = title.isNotBlank() or content.isNotBlank()
                         )
                     }
+                }
+            }
+
+            launch {
+                tagStore.observeTags().collect { tags ->
+                    reduce { state.copy(tags = tags) }
+                }
+            }
+
+            existingNote?.id?.let { noteId ->
+                launch {
+                    val selectedTags = withContext(ioDispatcher) {
+                        tagStore.getTagsForNote(noteId)
+                    }
+                    reduce { state.copy(selectedTagIds = selectedTags.mapNotNull { it.id }) }
                 }
             }
 
@@ -120,6 +138,14 @@ class AddEditNoteViewModel @Inject constructor(
                             isNoteSaved = true,
                             isAttachmentLoading = false
                         )
+                    }
+
+                    // Flush any tags toggled before noteId was available (V12)
+                    val pendingTagIds = state.selectedTagIds
+                    if (pendingTagIds.isNotEmpty()) {
+                        withContext(ioDispatcher) {
+                            noteStore.setNoteTags(requireNotNull(savedNote.id) { "insert returned null id" }, pendingTagIds)
+                        }
                     }
                 }
             }
@@ -164,6 +190,33 @@ class AddEditNoteViewModel @Inject constructor(
                     Log.i("AddEditNoteViewModel", "SaveNote: $note")
 
                     postSideEffect(AddEditNoteSideEffect.NavigateBackWithResult(note))
+                }
+
+            is AddEditNoteEvent.ToggleTag ->
+                intent {
+                    val tagId = event.tagId
+                    reduce {
+                        val updated = if (tagId in state.selectedTagIds) {
+                            state.selectedTagIds - tagId
+                        } else {
+                            state.selectedTagIds + tagId
+                        }
+                        state.copy(selectedTagIds = updated)
+                    }
+                    // V12: auto-save immediately when fromShare and note already persisted
+                    // state.selectedTagIds here reflects the post-reduce value
+                    if (state.isFromShare) {
+                        state.noteId?.let { noteId ->
+                            withContext(ioDispatcher) {
+                                noteStore.setNoteTags(noteId, state.selectedTagIds)
+                            }
+                        }
+                    }
+                }
+
+            is AddEditNoteEvent.ToggleTagPanel ->
+                intent {
+                    reduce { state.copy(isTagPanelExpanded = !state.isTagPanelExpanded) }
                 }
         }
     }

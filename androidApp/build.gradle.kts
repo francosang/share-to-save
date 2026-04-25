@@ -60,6 +60,12 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xannotation-default-target=param-property")
+    }
+}
+
 room {
     schemaDirectory("$projectDir/schemas")
 }

@@ -3,6 +3,7 @@ package com.jfranco.sharetosave.features.posts.addEdit
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.compose.foundation.text.input.TextFieldState
+import com.jfranco.sharetosave.domain.Tag
 import kotlinx.parcelize.Parceler
 import kotlinx.parcelize.Parcelize
 
@@ -21,7 +22,10 @@ data class AddEditNoteState(
     val isNoteSaved: Boolean = false,
     val saveEnabled: Boolean = false,
     val isFromShare: Boolean = false,
-    val isAttachmentLoading: Boolean = false
+    val isAttachmentLoading: Boolean = false,
+    val tags: List<Tag> = emptyList(),
+    val selectedTagIds: List<Long> = emptyList(),
+    val isTagPanelExpanded: Boolean = false,
 ) : Parcelable
 
 @Parcelize
