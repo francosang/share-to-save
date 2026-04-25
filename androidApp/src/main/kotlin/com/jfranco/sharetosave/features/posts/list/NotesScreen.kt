@@ -26,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
@@ -33,6 +34,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -56,6 +59,7 @@ fun NotesListScreen(
     val state by viewModel.collectAsState()
 
     val snackBarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     val context = LocalContext.current
 
@@ -71,12 +75,15 @@ fun NotesListScreen(
                 )
 
             is NotesSideEffect.ShowSnackbar -> {
-                val result = snackBarHostState.showSnackbar(
-                    message = sideEffect.message,
-                    actionLabel = sideEffect.actionLabel
-                )
-                if (result == SnackbarResult.ActionPerformed) {
-                    viewModel.onEvent(NotesEvent.RestoreNote)
+                scope.launch {
+                    val result = snackBarHostState.showSnackbar(
+                        message = sideEffect.message,
+                        actionLabel = sideEffect.actionLabel,
+                        duration = SnackbarDuration.Long
+                    )
+                    if (result == SnackbarResult.ActionPerformed) {
+                        viewModel.onEvent(NotesEvent.RestoreNote)
+                    }
                 }
             }
         }

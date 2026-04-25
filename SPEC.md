@@ -235,6 +235,7 @@ V19: WorkManager reminder workers tagged `"reminder_{reminderId}"` — cancel by
 V20: `POST_NOTIFICATIONS` ! request at runtime before first reminder schedule (Android 13+).
 V21: UI ⊥ construct `Note` with system-set fields (`created`, `edited`, `id`). `AddEditNoteEvent.SaveNote` carries `NoteInput` (UI-owned fields only). `NoteStore.save(input, existingId?)` sets timestamps + id.
 V22: `fromShare` auto-save Note ! read all UI-owned fields (`color`, `title`, `content`) from current `state` at save time. ⊥ hardcoded defaults (e.g. `color=0`).
+V23: `collectSideEffect` lambda ! ⊥ call suspending `showSnackbar()` directly. Must launch separate coroutine (`rememberCoroutineScope().launch{}`) for snackbar so collector stays non-blocking; ⊥ nav/other side effects queue behind visible snackbar.
 
 ---
 
@@ -280,6 +281,7 @@ T36|.|update `FileStorageHelper`: add `saveSharedFilesInternal(uris: List<Uri>, 
 T37|.|update `AddEditNoteViewModel` init: copy + save list of files; `Note.attachments` populated from result|V11,V22
 T38|.|update `AddEditScreen` UI: attachment gallery (horizontal scroll, thumbnails); add/remove individual attachments|V17
 T39|.|UX audit + polish: empty state in `NotesListScreen`, skeleton/loading indicators, enter/exit transitions, color picker a11y labels|V6
+T40|x|fix `NotesScreen.collectSideEffect`: move `showSnackbar()` into `rememberCoroutineScope().launch{}` so nav side effects dispatch independently while snackbar visible|V23,B2
 
 ---
 
@@ -287,3 +289,4 @@ T39|.|UX audit + polish: empty state in `NotesListScreen`, skeleton/loading indi
 
 id|date|cause|fix
 B1|2026-04-25|`fromShare` auto-save constructs `Note(color=0)` (hardcoded, line 110 AddEditNoteViewModel) → ignores state.color → user color pick lost|V22
+B2|2026-04-25|`NotesScreen.collectSideEffect` suspends directly on `showSnackbar()` (line 74) → collector blocked while snackbar visible: (1) snackbar appears stuck, (2) FAB click queued/dropped, (3) buffered `NavigateToAddEditNoteScreen` drains after snackbar dismiss → undo opens AddEdit|V23
