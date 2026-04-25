@@ -140,7 +140,7 @@ class AddEditNoteViewModel @Inject constructor(
                         )
                     }
 
-                    // Flush any tags toggled before noteId was available (V12)
+                    // Flush tags toggled before noteId was available (V12)
                     val pendingTagIds = state.selectedTagIds
                     if (pendingTagIds.isNotEmpty()) {
                         withContext(ioDispatcher) {
@@ -195,23 +195,20 @@ class AddEditNoteViewModel @Inject constructor(
             is AddEditNoteEvent.ToggleTag ->
                 intent {
                     val tagId = event.tagId
-                    reduce {
-                        val updated = if (tagId in state.selectedTagIds) {
-                            state.selectedTagIds - tagId
-                        } else {
-                            state.selectedTagIds + tagId
-                        }
-                        state.copy(selectedTagIds = updated)
+                    val updated = if (tagId in state.selectedTagIds) {
+                        state.selectedTagIds - tagId
+                    } else {
+                        state.selectedTagIds + tagId
                     }
-                    // V12: auto-save immediately when fromShare and note already persisted
-                    // state.selectedTagIds here reflects the post-reduce value
+                    // V12: persist updated list before reducing so DB and state stay in sync
                     if (state.isFromShare) {
                         state.noteId?.let { noteId ->
                             withContext(ioDispatcher) {
-                                noteStore.setNoteTags(noteId, state.selectedTagIds)
+                                noteStore.setNoteTags(noteId, updated)
                             }
                         }
                     }
+                    reduce { state.copy(selectedTagIds = updated) }
                 }
 
             is AddEditNoteEvent.ToggleTagPanel ->

@@ -323,7 +323,7 @@ private fun TagPickerPanel(
                         .padding(bottom = 8.dp)
                 ) {
                     items(tags) { tag ->
-                        val selected = tag.id != null && tag.id in selectedTagIds
+                        val selected = tag.id?.let { it in selectedTagIds } == true
                         FilterChip(
                             selected = selected,
                             onClick = { tag.id?.let { onToggleTag(it) } },

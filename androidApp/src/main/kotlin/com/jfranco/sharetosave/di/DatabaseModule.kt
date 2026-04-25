@@ -5,7 +5,9 @@ import androidx.room.Room
 import com.jfranco.sharetosave.persistence.implementation.AppDatabase
 import com.jfranco.sharetosave.persistence.implementation.MIGRATION_1_2
 import com.jfranco.sharetosave.persistence.implementation.MIGRATION_2_3
+import com.jfranco.sharetosave.persistence.implementation.MIGRATION_3_4
 import com.jfranco.sharetosave.persistence.implementation.dao.NoteDao
+import com.jfranco.sharetosave.persistence.implementation.dao.ReminderDao
 import com.jfranco.sharetosave.persistence.implementation.dao.TagDao
 import dagger.Module
 import dagger.Provides
@@ -28,7 +30,7 @@ class DatabaseModule {
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java, databaseName
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
     }
 
     @Singleton
@@ -41,5 +43,11 @@ class DatabaseModule {
     @Provides
     fun providesTagDao(appDatabase: AppDatabase): TagDao {
         return appDatabase.getTagDao()
+    }
+
+    @Singleton
+    @Provides
+    fun providesReminderDao(appDatabase: AppDatabase): ReminderDao {
+        return appDatabase.getReminderDao()
     }
 }

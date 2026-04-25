@@ -7,14 +7,17 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.jfranco.sharetosave.persistence.implementation.converter.LocalDateTimeConverter
 import com.jfranco.sharetosave.persistence.implementation.dao.NoteDao
+import com.jfranco.sharetosave.persistence.implementation.dao.ReminderDao
 import com.jfranco.sharetosave.persistence.implementation.dao.TagDao
 import com.jfranco.sharetosave.persistence.entity.NoteEntity
 import com.jfranco.sharetosave.persistence.entity.NoteTagCrossRef
+import com.jfranco.sharetosave.persistence.entity.ReminderEntity
 import com.jfranco.sharetosave.persistence.entity.TagEntity
 
 const val DB_VERSION_1 = 1
 const val DB_VERSION_2 = 2
 const val DB_VERSION_3 = 3
+const val DB_VERSION_4 = 4
 
 // Rename image → attachment_path, add attachment_mime_type.
 // Full table rebuild required: SQLite < 3.25 (min SDK 26) has no RENAME COLUMN.
@@ -63,16 +66,33 @@ val MIGRATION_2_3 = object : Migration(DB_VERSION_2, DB_VERSION_3) {
     }
 }
 
+val MIGRATION_3_4 = object : Migration(DB_VERSION_3, DB_VERSION_4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("""
+            CREATE TABLE reminder (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                note_id INTEGER NOT NULL,
+                trigger_at TEXT NOT NULL,
+                type TEXT NOT NULL,
+                FOREIGN KEY(note_id) REFERENCES note(id) ON DELETE CASCADE
+            )
+        """.trimIndent())
+        db.execSQL("CREATE INDEX index_reminder_note_id ON reminder(note_id)")
+    }
+}
+
 @Database(
     entities = [
         NoteEntity::class,
         TagEntity::class,
         NoteTagCrossRef::class,
+        ReminderEntity::class,
     ],
-    version = DB_VERSION_3
+    version = DB_VERSION_4
 )
 @TypeConverters(LocalDateTimeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun getNoteDao(): NoteDao
     abstract fun getTagDao(): TagDao
+    abstract fun getReminderDao(): ReminderDao
 }

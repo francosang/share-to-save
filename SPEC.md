@@ -255,7 +255,7 @@ T10|x|impl `TagStore` + `TagStoreImpl`|§I.TagStore
 T11|x|add `TagsViewModel` for drawer tag CRUD|§I.ViewModels
 T12|x|add tag picker panel in `AddEditScreen` (expandable, auto-expanded when `fromShare=true`)|V12,V14
 T13|x|wire tag toggle → immediate `noteStore.setNoteTags()` when `fromShare=true`|V12
-T14|.|add `ReminderEntity`, `ReminderDao`, Room migration|§I.ReminderDao
+T14|x|add `ReminderEntity`, `ReminderDao`, Room migration|§I.ReminderDao
 T15|.|impl `ReminderStore` + `ReminderStoreImpl`|§I.ReminderStore
 T16|.|add `ReminderWorker` (WorkManager): post notification + delete past reminder from DB|V15
 T17|.|impl `NotificationScheduler` (WorkManager-backed): schedule/cancel/rescheduleAll|V13,V19
