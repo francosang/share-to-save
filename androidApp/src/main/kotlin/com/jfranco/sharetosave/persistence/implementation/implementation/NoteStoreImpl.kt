@@ -35,7 +35,7 @@ class NoteStoreImpl @Inject constructor(
         note.copy(id = id)
     }
 
-    override suspend fun getNote(id: Int): Note? = withContext(ioDispatcher) {
+    override suspend fun getNote(id: Long): Note? = withContext(ioDispatcher) {
         noteDao.selectNote(id)?.toDomain()
     }
 
