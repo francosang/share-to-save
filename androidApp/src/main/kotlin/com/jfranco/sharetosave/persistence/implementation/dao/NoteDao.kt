@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.jfranco.sharetosave.persistence.entity.NoteEntity
 import com.jfranco.sharetosave.persistence.entity.NoteTagCrossRef
 import kotlinx.coroutines.flow.Flow
@@ -37,4 +38,10 @@ interface NoteDao {
 
     @Query("DELETE FROM notes_tags WHERE note_id = :noteId")
     suspend fun deleteCrossRefsForNote(noteId: Long)
+
+    @Transaction
+    suspend fun setTags(noteId: Long, tagIds: List<Long>) {
+        deleteCrossRefsForNote(noteId)
+        tagIds.forEach { tagId -> insertCrossRef(NoteTagCrossRef(noteId, tagId)) }
+    }
 }

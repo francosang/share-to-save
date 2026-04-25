@@ -1,7 +1,9 @@
 package com.jfranco.sharetosave.di
 
 import com.jfranco.sharetosave.persistence.implementation.implementation.NoteStoreImpl
+import com.jfranco.sharetosave.persistence.implementation.implementation.TagStoreImpl
 import com.jfranco.sharetosave.persistence.specification.NoteStore
+import com.jfranco.sharetosave.persistence.specification.TagStore
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -15,4 +17,8 @@ abstract class StoreModuleBinds {
     @Singleton
     @Binds
     abstract fun bindNoteStore(impl: NoteStoreImpl): NoteStore
+
+    @Singleton
+    @Binds
+    abstract fun bindTagStore(impl: TagStoreImpl): TagStore
 }

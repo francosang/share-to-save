@@ -9,4 +9,6 @@ interface NoteStore {
     suspend fun save(note: Note): Note
     suspend fun getNote(id: Long): Note?
     suspend fun deleteNote(id: Long)
+    suspend fun setNoteTags(noteId: Long, tagIds: List<Long>)
+    fun observeNotesByTag(tagId: Long): Flow<List<Note>>
 }

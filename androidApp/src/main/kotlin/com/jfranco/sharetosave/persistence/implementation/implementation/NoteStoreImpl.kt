@@ -42,4 +42,14 @@ class NoteStoreImpl @Inject constructor(
     override suspend fun deleteNote(id: Long) = withContext(ioDispatcher) {
         noteDao.delete(id)
     }
+
+    override suspend fun setNoteTags(noteId: Long, tagIds: List<Long>) = withContext(ioDispatcher) {
+        noteDao.setTags(noteId, tagIds)
+    }
+
+    override fun observeNotesByTag(tagId: Long): Flow<List<Note>> {
+        return noteDao.observeByTag(tagId)
+            .map { it.toDomains() }
+            .flowOn(ioDispatcher)
+    }
 }

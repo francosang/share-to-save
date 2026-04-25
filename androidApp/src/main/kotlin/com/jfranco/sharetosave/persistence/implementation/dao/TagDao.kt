@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.jfranco.sharetosave.persistence.entity.TagEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -17,6 +18,9 @@ interface TagDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(tag: TagEntity): Long
+
+    @Update
+    suspend fun update(tag: TagEntity)
 
     @Query("DELETE FROM tag WHERE id = :id")
     suspend fun delete(id: Long)
