@@ -256,12 +256,12 @@ T11|x|add `TagsViewModel` for drawer tag CRUD|§I.ViewModels
 T12|x|add tag picker panel in `AddEditScreen` (expandable, auto-expanded when `fromShare=true`)|V12,V14
 T13|x|wire tag toggle → immediate `noteStore.setNoteTags()` when `fromShare=true`|V12
 T14|x|add `ReminderEntity`, `ReminderDao`, Room migration|§I.ReminderDao
-T15|.|impl `ReminderStore` + `ReminderStoreImpl`|§I.ReminderStore
+T15|x|impl `ReminderStore` + `ReminderStoreImpl`|§I.ReminderStore
 T16|.|add `ReminderWorker` (WorkManager): post notification + delete past reminder from DB|V15
 T17|.|impl `NotificationScheduler` (WorkManager-backed): schedule/cancel/rescheduleAll|V13,V19
 T18|.|add `BootReceiver`: `BOOT_COMPLETED` → `rescheduleAll()`|V16
 T19|.|add reminder panel in `AddEditScreen`: expandable, options DAY/WEEK/MONTH/YEAR/CUSTOM|V13
-T20|.|add `RemindersViewModel` + reminders section in drawer|§I.ViewModels
+T20|x|add `RemindersViewModel` + reminders section in drawer|§I.ViewModels
 T21|.|add drawer to `NotesListScreen`: All Notes / Tags / Reminders sections|§I.Navigation
 T22|.|impl `ContentType` derivation helper; show icons in `NoteItemUI`|V17
 T23|.|add tag filter to `NotesViewModel` + `noteStore.observeNotesByTag()`|§I.NoteStore
