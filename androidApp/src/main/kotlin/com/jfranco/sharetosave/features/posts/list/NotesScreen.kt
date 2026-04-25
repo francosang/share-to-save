@@ -76,10 +76,11 @@ fun NotesListScreen(
 
             is NotesSideEffect.ShowSnackbar -> {
                 scope.launch {
+                    snackBarHostState.currentSnackbarData?.dismiss()
                     val result = snackBarHostState.showSnackbar(
                         message = sideEffect.message,
                         actionLabel = sideEffect.actionLabel,
-                        duration = SnackbarDuration.Long
+                        duration = SnackbarDuration.Short
                     )
                     if (result == SnackbarResult.ActionPerformed) {
                         viewModel.onEvent(NotesEvent.RestoreNote)
