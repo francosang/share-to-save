@@ -30,7 +30,7 @@ sealed class NoteOrder(open val orderType: OrderType) : Parcelable {
 fun NoteOrder.comparator(): Comparator<Note> {
     val base: Comparator<Note> = when (this) {
         is NoteOrder.Title -> compareBy { it.title?.lowercase() ?: "" }
-        is NoteOrder.Date -> compareBy { it.edited ?: it.created }
+        is NoteOrder.Date -> compareBy { it.created }
         is NoteOrder.Color -> compareBy { it.color }
     }
     return if (orderType is OrderType.Descending) base.reversed() else base
@@ -45,4 +45,7 @@ sealed class NotesEvent {
     object ToggleDrawer : NotesEvent()
     data class SelectTag(val tagId: Long?) : NotesEvent()
     data class DeleteReminder(val id: Long) : NotesEvent()
+    object OpenRemindersScreen : NotesEvent()
+    data class OpenTagsScreen(val openAlert: Boolean = false) : NotesEvent()
+    object CloseDrawer : NotesEvent()
 }
