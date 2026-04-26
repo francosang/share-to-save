@@ -43,11 +43,12 @@ BootReceiver: `RECEIVE_BOOT_COMPLETED` → reschedule ∀ active reminders.
 |---|---|---|
 |`NotesListScreen`|yes|—|
 |`AddEditScreen`|no|`AddEditScreenDestinationArgs(note: Note?, text: String?, fileUri: Uri?, mimeType: String?, fromShare: Boolean)`|
+|`TagsScreen`|no|—|
+|`RemindersScreen`|no|—|
 
 Drawer (modal, ⊥ destination) ∈ `NotesListScreen`:
-- All Notes
-- Tags (list, tap → filter notes)
-- Reminders (∀ active reminders)
+- Nav section: "All Notes" (clears tag filter, stays on NotesListScreen) · "Reminders" (→ `RemindersScreen`)
+- Tags section (below nav): tags as filter chips (tap → set `activeTagFilter`); "Edit tags" button → `TagsScreen`; last item = "Add new tag" inline button (no nav)
 
 ### NoteStore
 
@@ -149,8 +150,8 @@ MainViewModel — share intents
 
 NotesViewModel — list + drawer
 - State: `NotesState(notes, noteOrder, isOrderSectionVisible, recentDeletedNote, tags, activeTagFilter: Long?, isDrawerOpen, reminders)`
-- Events: Order, DeleteNote, RestoreNote, ToggleOrderSection, AddEditNoteScreen, ToggleDrawer, SelectTag(id?), DeleteReminder
-- SideEffects: NavigateToAddEditNoteScreen, ShowSnackbar
+- Events: Order, DeleteNote, RestoreNote, ToggleOrderSection, AddEditNoteScreen, ToggleDrawer, SelectTag(id?), DeleteReminder, NavigateToReminders, NavigateToTagsScreen
+- SideEffects: NavigateToAddEditNoteScreen, ShowSnackbar, NavigateToRemindersScreen, NavigateToTagsScreen
 
 AddEditNoteViewModel — create/edit/share
 - State: `AddEditNoteState(title, content, attachmentPath, attachmentMimeType, color, noteId, isNoteSaved, saveEnabled, isFromShare, tags, selectedTagIds, reminders, isTagPanelExpanded, isReminderPanelExpanded)`
@@ -262,7 +263,7 @@ T17|.|impl `NotificationScheduler` (WorkManager-backed): schedule/cancel/resched
 T18|.|add `BootReceiver`: `BOOT_COMPLETED` → `rescheduleAll()`|V16
 T19|.|add reminder panel in `AddEditScreen`: expandable, options DAY/WEEK/MONTH/YEAR/CUSTOM|V13
 T20|x|add `RemindersViewModel` + reminders section in drawer|§I.ViewModels
-T21|.|add drawer to `NotesListScreen`: All Notes / Tags / Reminders sections|§I.Navigation
+T21|.|redesign `NotesListScreen` drawer: nav section (All Notes + Reminders→`RemindersScreen`), Tags section (filter chips + Edit tags→`TagsScreen` + Add new tag inline)|§I.Navigation,V6
 T22|.|impl `ContentType` derivation helper; show icons in `NoteItemUI`|V17
 T23|.|add tag filter to `NotesViewModel` + `noteStore.observeNotesByTag()`|§I.NoteStore
 T24|.|request `POST_NOTIFICATIONS` before first reminder schedule|V20
@@ -282,6 +283,9 @@ T37|.|update `AddEditNoteViewModel` init: copy + save list of files; `Note.attac
 T38|.|update `AddEditScreen` UI: attachment gallery (horizontal scroll, thumbnails); add/remove individual attachments|V17
 T39|.|UX audit + polish: empty state in `NotesListScreen`, skeleton/loading indicators, enter/exit transitions, color picker a11y labels; tag picker empty state: show "+ New tag" affordance (chip or link to drawer) when `tags.isEmpty()`|V6
 T40|x|fix `NotesScreen.collectSideEffect`: move `showSnackbar()` into `rememberCoroutineScope().launch{}` so nav side effects dispatch independently while snackbar visible|V23,B2
+T41|.|create `TagsScreen`: full CRUD UI backed by `TagsViewModel` (list tags, add/edit/delete)|§I.ViewModels
+T42|.|create `RemindersScreen`: destination backed by `RemindersViewModel` + `RemindersSection`|§I.ViewModels
+T43|.|wire `NotesSideEffect.NavigateToRemindersScreen` + `NavigateToTagsScreen` in `NotesViewModel` + `NotesScreen.collectSideEffect`|§I.ViewModels,V6
 
 ---
 

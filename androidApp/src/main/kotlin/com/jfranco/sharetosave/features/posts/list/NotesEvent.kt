@@ -42,4 +42,7 @@ sealed class NotesEvent {
     object RestoreNote : NotesEvent()
     object ToggleOrderSection : NotesEvent()
     data class AddEditNoteScreen(val note: Note?) : NotesEvent()
+    object ToggleDrawer : NotesEvent()
+    data class SelectTag(val tagId: Long?) : NotesEvent()
+    data class DeleteReminder(val id: Long) : NotesEvent()
 }

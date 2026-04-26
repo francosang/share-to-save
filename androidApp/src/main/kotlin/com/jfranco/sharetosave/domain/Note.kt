@@ -19,6 +19,7 @@ data class Note(
     val created: LocalDateTime,
     val edited: LocalDateTime?,
     val color: Int,
+    val tagIds: List<Long> = emptyList(),
 ) : Parcelable {
     companion object {
         val noteColors = listOf(RedOrange, LightGreen, Violet, BabyBlue, RedPink)

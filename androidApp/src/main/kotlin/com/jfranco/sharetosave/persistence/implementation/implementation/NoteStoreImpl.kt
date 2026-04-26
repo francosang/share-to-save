@@ -9,6 +9,7 @@ import com.jfranco.sharetosave.persistence.entity.toEntity
 import com.jfranco.sharetosave.persistence.specification.NoteStore
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -24,9 +25,10 @@ class NoteStoreImpl @Inject constructor(
     }
 
     override fun observeNotes(): Flow<List<Note>> {
-        return noteDao.observeAll()
-            .map { it.toDomains() }
-            .flowOn(ioDispatcher)
+        return combine(noteDao.observeAll(), noteDao.observeAllCrossRefs()) { entities, crossRefs ->
+            val tagIdsByNote = crossRefs.groupBy({ it.noteId }, { it.tagId })
+            entities.toDomains(tagIdsByNote)
+        }.flowOn(ioDispatcher)
     }
 
     override suspend fun save(note: Note): Note = withContext(ioDispatcher) {
@@ -48,8 +50,9 @@ class NoteStoreImpl @Inject constructor(
     }
 
     override fun observeNotesByTag(tagId: Long): Flow<List<Note>> {
-        return noteDao.observeByTag(tagId)
-            .map { it.toDomains() }
-            .flowOn(ioDispatcher)
+        return combine(noteDao.observeByTag(tagId), noteDao.observeAllCrossRefs()) { entities, crossRefs ->
+            val tagIdsByNote = crossRefs.groupBy({ it.noteId }, { it.tagId })
+            entities.toDomains(tagIdsByNote)
+        }.flowOn(ioDispatcher)
     }
 }

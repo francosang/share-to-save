@@ -18,8 +18,10 @@ data class NoteEntity(
     @ColumnInfo(name = "color") val color: Int,
 )
 
-fun List<NoteEntity>.toDomains() = this.map { it.toDomain() }
-fun NoteEntity.toDomain() = Note(
+fun List<NoteEntity>.toDomains(tagIdsByNote: Map<Long, List<Long>> = emptyMap()) =
+    this.map { it.toDomain(tagIdsByNote[it.id] ?: emptyList()) }
+
+fun NoteEntity.toDomain(tagIds: List<Long> = emptyList()) = Note(
     id = this.id,
     title = this.title,
     content = this.content,
@@ -27,7 +29,8 @@ fun NoteEntity.toDomain() = Note(
     attachmentMimeType = this.attachmentMimeType,
     created = this.created,
     edited = this.edited,
-    color = this.color
+    color = this.color,
+    tagIds = tagIds,
 )
 
 fun Note.toEntity() = NoteEntity(
