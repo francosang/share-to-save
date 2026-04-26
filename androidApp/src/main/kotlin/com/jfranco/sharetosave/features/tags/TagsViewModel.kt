@@ -4,7 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.jfranco.sharetosave.di.IoDispatcher
 import com.jfranco.sharetosave.domain.Tag
+import com.jfranco.sharetosave.features.posts.addEdit.AddEditScreenDestinationArgs
 import com.jfranco.sharetosave.persistence.specification.TagStore
+import com.ramcosta.composedestinations.generated.destinations.AddEditScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.TagsScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.TagsScreenDestinationNavArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.coroutineScope
@@ -21,8 +25,10 @@ class TagsViewModel @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : ViewModel(), ContainerHost<TagsState, Nothing> {
 
+    private val arg: TagsScreenDestinationNavArgs = TagsScreenDestination.argsFrom(savedStateHandle)
+
     override val container = container<TagsState, Nothing>(
-        initialState = TagsState(),
+        initialState = TagsState(showAddDialog = arg.alertOpened),
         savedStateHandle = savedStateHandle
     ) {
         coroutineScope {
@@ -56,6 +62,15 @@ class TagsViewModel @Inject constructor(
                         tagStore.save(event.tag)
                     }
                 }
+
+            TagsEvent.ShowAddDialog ->
+                intent { reduce { state.copy(showAddDialog = true) } }
+
+            is TagsEvent.ShowEditDialog ->
+                intent { reduce { state.copy(editingTag = event.tag) } }
+
+            TagsEvent.DismissDialog ->
+                intent { reduce { state.copy(showAddDialog = false, editingTag = null) } }
         }
     }
 }

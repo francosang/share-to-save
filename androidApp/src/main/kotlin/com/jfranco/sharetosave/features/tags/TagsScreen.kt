@@ -25,9 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,7 +33,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jfranco.sharetosave.domain.Note
-import com.jfranco.sharetosave.domain.Tag
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -51,9 +47,6 @@ fun TagsScreen(
 ) {
     val viewModel = hiltViewModel<TagsViewModel>()
     val state by viewModel.collectAsState()
-
-    var showAddDialog by remember(alertOpened) { mutableStateOf(alertOpened) }
-    var editingTag by remember { mutableStateOf<Tag?>(null) }
 
     Scaffold(
         topBar = {
@@ -76,7 +69,7 @@ fun TagsScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { showAddDialog = true }
+                        .clickable { viewModel.onEvent(TagsEvent.ShowAddDialog) }
                         .padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -116,7 +109,7 @@ fun TagsScreen(
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.weight(1f)
                     )
-                    IconButton(onClick = { editingTag = tag }) {
+                    IconButton(onClick = { viewModel.onEvent(TagsEvent.ShowEditDialog(tag)) }) {
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Edit tag",
@@ -128,7 +121,7 @@ fun TagsScreen(
         }
     }
 
-    if (showAddDialog) {
+    if (state.showAddDialog) {
         TagFormDialog(
             title = "New tag",
             initialName = "",
@@ -136,13 +129,13 @@ fun TagsScreen(
             confirmLabel = "Add",
             onConfirm = { name, color ->
                 viewModel.onEvent(TagsEvent.AddTag(name, color))
-                showAddDialog = false
+                viewModel.onEvent(TagsEvent.DismissDialog)
             },
-            onDismiss = { showAddDialog = false }
+            onDismiss = { viewModel.onEvent(TagsEvent.DismissDialog) }
         )
     }
 
-    editingTag?.let { tag ->
+    state.editingTag?.let { tag ->
         TagFormDialog(
             title = "Edit tag",
             initialName = tag.name,
@@ -151,13 +144,13 @@ fun TagsScreen(
             showDelete = true,
             onConfirm = { name, color ->
                 viewModel.onEvent(TagsEvent.EditTag(tag.copy(name = name, color = color)))
-                editingTag = null
+                viewModel.onEvent(TagsEvent.DismissDialog)
             },
             onDelete = {
                 tag.id?.let { id -> viewModel.onEvent(TagsEvent.DeleteTag(id)) }
-                editingTag = null
+                viewModel.onEvent(TagsEvent.DismissDialog)
             },
-            onDismiss = { editingTag = null }
+            onDismiss = { viewModel.onEvent(TagsEvent.DismissDialog) }
         )
     }
 }

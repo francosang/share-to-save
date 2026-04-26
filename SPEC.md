@@ -43,7 +43,7 @@ BootReceiver: `RECEIVE_BOOT_COMPLETED` → reschedule ∀ active reminders.
 |---|---|---|
 |`NotesListScreen`|yes|—|
 |`AddEditScreen`|no|`AddEditScreenDestinationArgs(note: Note?, text: String?, fileUri: Uri?, mimeType: String?, fromShare: Boolean)`|
-|`TagsScreen`|no|—|
+|`TagsScreen`|no|`alertOpened: Boolean`|
 |`RemindersScreen`|no|—|
 
 Drawer (modal, ⊥ destination) ∈ `NotesListScreen`:
@@ -159,8 +159,8 @@ AddEditNoteViewModel — create/edit/share
 - SideEffects: `NavigateBackWithResult(note: Note)`
 
 TagsViewModel — drawer tag CRUD
-- State: `TagsState(tags: List<Tag>)`
-- Events: AddTag(name, color), DeleteTag(id), EditTag(tag)
+- State: `TagsState(tags: List<Tag>, showAddDialog: Boolean, editingTag: Tag?)`
+- Events: AddTag(name, color), DeleteTag(id), EditTag(tag), ShowAddDialog, ShowEditDialog(tag), DismissDialog
 
 RemindersViewModel — drawer reminders
 - State: `RemindersState(reminders: List<ReminderWithNote>)`

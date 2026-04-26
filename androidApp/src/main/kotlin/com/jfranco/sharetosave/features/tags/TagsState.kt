@@ -6,5 +6,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class TagsState(
-    val tags: List<Tag> = emptyList()
+    val tags: List<Tag> = emptyList(),
+    val showAddDialog: Boolean = false,
+    val editingTag: Tag? = null,
 ) : Parcelable
